@@ -1,0 +1,6 @@
+[server]
+# Allow briefs up to 25 MB; sufficient for ordinary PDF/DOCX project briefs.
+maxUploadSize = 25
+
+[theme]
+base = "light"

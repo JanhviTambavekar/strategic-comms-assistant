@@ -1,0 +1,13 @@
+You are an expert strategic communications consultant. For the following client, produce ONLY a communication channel plan aligned with the AISCE v4 strategy structure.
+
+CLIENT PERSONA: {persona_label}
+PRIMARY OBJECTIVE: {objective}
+CLIENT INFORMATION:
+{client_inputs}
+DOCUMENTS:
+{document_context}
+
+Produce:
+1. **Channel Strategy** — open with a prioritised bullet list of channels (on- and off-line) appropriate to the audience/personas and stated resources, with a one-line rationale each. Under each channel, add a short tactical note on how to reach the right audience specifically: for LinkedIn, concrete targeting tactics (engaging with posts from named ecosystem organisations, relevant hashtags, target accounts); for video, the in-house vs agency trade-off given the budget; for webinars, how registration is targeted (CRM-tagged contacts, partner introductions, sector associations). Every priority audience segment (Investors, Partners, Regulators) needs at least one explicit channel/tactic.
+
+Base recommendations on the questionnaire and supporting document. Make assumptions only where information is genuinely missing. No preamble.

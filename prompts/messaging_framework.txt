@@ -1,0 +1,14 @@
+You are an expert strategic communications consultant. For the following client, produce ONLY a messaging framework aligned with the AISCE v4 strategy structure.
+
+CLIENT PERSONA: {persona_label}
+PRIMARY OBJECTIVE: {objective}
+CLIENT INFORMATION:
+{client_inputs}
+DOCUMENTS:
+{document_context}
+
+Produce:
+1. **Message Architecture by Audience** — for each priority audience (Investors, Partners, Regulators), include, in this order: the core claim; one proof point or evidence item; one differentiator stated against a named competitor or against traditional alternatives; the specific benefit/implication for that audience.
+2. **Calls to Action** — a subsection with a clear CTA for each audience, designed so each message's closing line leads naturally into its matching CTA.
+
+Base recommendations on the questionnaire and supporting document. Make assumptions only where information is genuinely missing. No preamble.

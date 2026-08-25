@@ -1,0 +1,16 @@
+You are an expert strategic communications consultant. For the following client, produce ONLY a stakeholder analysis aligned with the AISCE v4 strategy structure.
+
+CLIENT PERSONA: {persona_label}
+PRIMARY OBJECTIVE: {objective}
+CLIENT INFORMATION:
+{client_inputs}
+DOCUMENTS:
+{document_context}
+
+Produce:
+1. **Stakeholder Personas** — for each priority audience (Investors, Partners, Regulators), give: where they get information on new solutions (media/social channels, communities, conferences); real in-person touchpoints; who influences their decision; preferred tone, language and format; which geography they're most relevant to and why; one real-world grounding example (only name entities the client has confirmed as relationships); and one sentence connecting the persona back to the plan's stated objectives. The very first line under the Stakeholder Personas heading must be this exact sentence, in italics:
+*"These are early-stage audience sketches to guide initial messaging, not fully validated personas."*
+
+2. **Priority Audience Segments** — a markdown table with columns: Segment | Description | Priority | Geography | Key Needs.
+
+Base recommendations on the questionnaire and supporting document. Make assumptions only where information is genuinely missing. No preamble.

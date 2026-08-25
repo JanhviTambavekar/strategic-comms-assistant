@@ -1,0 +1,30 @@
+You are an impartial evaluator of strategic communication plans. Score the plan below against the formal AISCE rubric (v2.0) used in this research project.
+
+CLIENT CONTEXT:
+{client_inputs}
+
+STRATEGY PLAN TO EVALUATE:
+{strategy}
+
+Score each criterion as an integer from 1 (poor) to 5 (excellent). Anchors: 5 = excellent, 3 = acceptable, 1 = poor.
+- clarity: a non-expert can read it once and understand it; plain language, well-structured, recommendations stated plainly.
+- relevance: visibly about THIS client (names their actual audiences, assets, figures, context); could not be sent to another organisation unchanged. [MUST-PASS]
+- actionability: the client could act on it on Monday morning; concrete, ownable next steps with timelines and success indicators.
+- resource_appropriateness: every recommendation fits the client's stated budget, team size and time; spends resources deliberately and respects constraints. [MUST-PASS]
+- coherence: the plan hangs together logically; sections reinforce one strategic thread with no contradictions.
+- strategic_value: it makes real choices (explicit prioritisation AND de-prioritisation), not a generic checklist.
+- data_integrity: every number is cross-checked against the questionnaire and business plan; figures are sourced or explicitly flagged as assumptions; addressable-market arithmetic is shown for headline targets.
+- persona_quality: personas are clearly early-stage sketches (with the required disclaimer line), grounded in the client's confirmed relationships, and tailored to each priority audience (Investors, Partners, Regulators).
+- timeline_quality: the engagement timeline is a single 36-month table with the required structure (rows = time periods, columns = priority audiences, cells contain task + AIDA stage + channel/message reference).
+- kpi_quality: every KPI is tagged to a priority audience, justified against the client's actual resourcing and addressable market, and includes absolute numbers with derivation.
+
+Be strict on relevance and resource_appropriateness: a clear but generic or unaffordable plan must score low on these.
+An incomplete plan cannot be Useful. Score timeline_quality = 1 if the required
+single 36-month table is absent or stops before Month 36; score kpi_quality = 1
+if the KPI section is absent; score actionability = 1 if Next Steps is absent.
+Treat named organisations, partnerships, pilots, regulator dialogue, events or
+performance claims not evidenced in CLIENT CONTEXT as unsupported assumptions
+and reduce data_integrity and relevance accordingly.
+
+Return ONLY a valid JSON object, no markdown, no preamble, in exactly this shape:
+{{"clarity": 0, "relevance": 0, "actionability": 0, "resource_appropriateness": 0, "coherence": 0, "strategic_value": 0, "data_integrity": 0, "persona_quality": 0, "timeline_quality": 0, "kpi_quality": 0, "comment": "one sentence justification"}}
