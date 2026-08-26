@@ -139,7 +139,7 @@ def _gemini(prompt: str, max_tokens: int, selected_model: str | None = None):
     import google.generativeai as genai
 
     genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-    model = selected_model or os.getenv("GOOGLE_MODEL", "gemini-2.0-flash")
+    model = selected_model or os.getenv("GOOGLE_MODEL", "gemini-3.7-flash")
     model_obj = genai.GenerativeModel(model)
     resp = model_obj.generate_content(
         prompt,
