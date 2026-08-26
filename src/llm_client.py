@@ -139,13 +139,14 @@ def _gemini(prompt: str, max_tokens: int, selected_model: str | None = None):
     import google.generativeai as genai
 
     genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-    model = selected_model or os.getenv("GOOGLE_MODEL", "gemini-3.7-flash")
+    model = selected_model or os.getenv("GOOGLE_MODEL", "gemini-3.5-flash-lite")
     model_obj = genai.GenerativeModel(model)
     resp = model_obj.generate_content(
         prompt,
         generation_config=genai.types.GenerationConfig(
             max_output_tokens=max_tokens,
         ),
+        request_options={"timeout": 180},
     )
     text = resp.text
 

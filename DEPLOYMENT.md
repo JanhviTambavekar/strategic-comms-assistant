@@ -51,7 +51,7 @@ are exposed to this app as environment variables, so no code changes are needed.
 ```toml
 LLM_PROVIDER = "gemini"
 GOOGLE_API_KEY = "your-real-key"
-GOOGLE_MODEL = "gemini-3.7-flash"
+GOOGLE_MODEL = "gemini-3.5-flash-lite"
 ```
 
 ### Anthropic
