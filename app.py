@@ -66,6 +66,12 @@ NVIDIA_MODEL_OPTIONS = {
     "NVIDIA Nemotron Mini 4B Instruct": "nvidia/nemotron-mini-4b-instruct",
 }
 
+GEMINI_MODEL_OPTIONS = {
+    "Gemini 3.5 Flash-Lite": "gemini-3.5-flash-lite",
+    "Gemini 3.1 Flash-Lite": "gemini-3.1-flash-lite",
+    "Gemini 2.5 Flash-Lite": "gemini-2.5-flash-lite",
+}
+
 
 def sidebar():
     st.sidebar.title("📣 Strategic Comms Assistant")
@@ -81,6 +87,40 @@ def sidebar():
     st.sidebar.markdown(f"**LLM provider:** {badge.get(provider, provider)}")
     if provider == "mock":
         st.sidebar.info("Running in MOCK mode — add an API key to `.env` for tailored output.")
+    if provider == "gemini":
+        st.sidebar.markdown("---")
+        st.sidebar.subheader("Google Gemini models")
+        labels = list(GEMINI_MODEL_OPTIONS)
+        configured = os.getenv("GOOGLE_MODEL", "")
+        configured_index = next(
+            (index for index, label in enumerate(labels)
+             if GEMINI_MODEL_OPTIONS[label] == configured),
+            0,
+        )
+        strategy_label = st.sidebar.selectbox(
+            "Strategy generation model", labels, index=configured_index,
+            help="Model used to generate the communication strategy.",
+        )
+        judge_label = st.sidebar.selectbox(
+            "Independent evaluation model", labels, index=1,
+            help="A separate Gemini model used to judge the completed strategy.",
+        )
+        quality = st.sidebar.radio(
+            "Generation mode",
+            ["Fast draft", "Full quality"],
+            horizontal=True,
+            help="Fast draft is recommended on free hosting. Full quality produces a longer report.",
+        )
+        model_selection = {
+            "strategy_model": GEMINI_MODEL_OPTIONS[strategy_label],
+            "judge_model": GEMINI_MODEL_OPTIONS[judge_label],
+            "strategy_max_tokens": 3000 if quality == "Fast draft" else 5000,
+            "judge_max_tokens": 500 if quality == "Fast draft" else 800,
+        }
+        if model_selection["strategy_model"] == model_selection["judge_model"]:
+            st.sidebar.warning("Choose a different evaluation model for an independent comparison.")
+        else:
+            st.sidebar.caption("Generation and evaluation use separate Gemini models.")
     if provider == "openai" and "nvidia" in (os.getenv("OPENAI_BASE_URL") or "").lower():
         st.sidebar.markdown("---")
         st.sidebar.subheader("NVIDIA NIM models")
