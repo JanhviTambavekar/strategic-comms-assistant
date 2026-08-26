@@ -9,6 +9,8 @@ optionally **uploads a brief**, and the system routes their inputs through a
 **knowledge tree** to build a **prompt**, calls an **LLM**, and returns a
 **tailored communication & engagement strategy** plus an **evaluation score**.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/JanhviTambavekar/strategic-comms-assistant)
+
 ## What it demonstrates (maps to the proposal)
 
 | Proposal concept | Where it lives |
