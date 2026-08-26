@@ -26,6 +26,7 @@ from src import (
     output_formatter,
     evaluator,
     cost,
+    report_exporter,
 )
 from src.questionnaire_parser import parse_questionnaire_file
 from src.likert_scale import get_likert_scale, get_likert_value, get_likert_label
@@ -353,9 +354,9 @@ def main():
         )
         facts_col, assumptions_col = st.columns(2)
         answers["confirmed_facts"] = facts_col.text_area(
-            "Confirmed facts to use as evidence",
+            "Optional information",
             key="confirmed_facts",
-            placeholder="e.g. Named pilot, funding round, verified performance figure, confirmed relationship",
+            placeholder="e.g. Any additional context, named pilot, funding round, verified figure, or confirmed relationship",
         )
         answers["assumptions_for_review"] = assumptions_col.text_area(
             "Assumptions / facts to validate",
@@ -498,15 +499,24 @@ def main():
     tab_strategy, tab_eval, tab_cost, tab_prompt, tab_experiments = st.tabs(
         ["📄 Strategy Report", "📊 Evaluation Dashboard", "💰 Token & Cost",
          "🔍 Prompt (transparency)"]
-        + ["Experiments & Export"]
+        + ["Downloads"]
     )
 
     with tab_strategy:
         st.markdown(titled)
         fname = output_formatter.safe_filename(answers.get("org_name", "strategy"))
-        st.download_button(
-            "⬇ Download as Markdown", titled, file_name=f"{fname}_strategy.md",
-            mime="text/markdown",
+        word_data = report_exporter.to_docx(titled)
+        pdf_data = report_exporter.to_pdf(titled)
+        download_cols = st.columns(2)
+        download_cols[0].download_button(
+            "⬇ Download Word report", word_data,
+            file_name=f"{fname}_strategy.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        download_cols[1].download_button(
+            "⬇ Download PDF report", pdf_data,
+            file_name=f"{fname}_strategy.pdf",
+            mime="application/pdf",
         )
 
     with tab_eval:
@@ -753,25 +763,21 @@ def main():
         )
 
     with tab_experiments:
-        st.subheader("Experiment log")
-        st.caption(
-            "Each generated strategy is retained for this browser session. Generate the same "
-            "brief with different providers or personas, then export the comparison for analysis."
+        st.subheader("Download report")
+        st.caption("Download the completed strategy in an editable Word file or a shareable PDF.")
+        export_cols = st.columns(2)
+        export_cols[0].download_button(
+            "⬇ Download Word report", word_data,
+            file_name=f"{fname}_strategy.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            key="download_word_export_tab",
         )
-        records = st.session_state.get("experiment_runs", [])
-        if records:
-            st.dataframe(records, use_container_width=True, hide_index=True)
-            export_cols = st.columns(2)
-            export_cols[0].download_button(
-                "Download experiment CSV", experiment_csv(records),
-                file_name="aisce_experiment_runs.csv", mime="text/csv",
-            )
-            export_cols[1].download_button(
-                "Download experiment JSON", json.dumps(records, indent=2),
-                file_name="aisce_experiment_runs.json", mime="application/json",
-            )
-        else:
-            st.info("Generate a strategy to create the first experiment record.")
+        export_cols[1].download_button(
+            "⬇ Download PDF report", pdf_data,
+            file_name=f"{fname}_strategy.pdf",
+            mime="application/pdf",
+            key="download_pdf_export_tab",
+        )
 
     with tab_prompt:
         st.caption("The exact prompt assembled by the knowledge tree + prompt builder:")
