@@ -551,14 +551,13 @@ def render_sidebar() -> dict:
     }
     if provider in {"free", "groq", "openrouter"}:
         st.sidebar.markdown("---")
-        with st.sidebar.expander("⚙️ Free Model Configuration", expanded=True):
-            free_models = llm_client.available_free_models()
-            if free_models:
+        st.sidebar.markdown("**Free Model Configuration**")
+        free_models = llm_client.available_free_models()
+        if free_models:
                 labels = list(free_models)
-                st.sidebar.caption(f"Choose from {len(labels)} configured models:")
-                strategy_label = st.sidebar.radio(
+                strategy_label = st.sidebar.selectbox(
                     "Strategy model", labels, index=0,
-                    help="All configured models are shown. Nemotron is currently the reliable default.",
+                    help="Choose a free/free-tier model. Unavailable NVIDIA trial models fall back to Nemotron.",
                 )
                 strategy_provider = free_models[labels[0]].split("::", 1)[0]
                 judge_index = next(
@@ -578,12 +577,12 @@ def render_sidebar() -> dict:
                     "judge_max_tokens": 180 if speed == "Quick" else 400,
                     "use_llm_judge": speed != "Quick",
                 }
-                st.sidebar.caption("Fast fallback is enabled across distinct configured services.")
                 st.sidebar.caption(
-                    f"{len(labels)} configured models shown. Experimental NVIDIA models "
-                    "fall back to Nemotron after 4 seconds when unavailable."
+                    f"**{len(labels)} available choices:** "
+                    + " · ".join(label.split(": ", 1)[-1] for label in labels)
                 )
-            else:
+                st.sidebar.caption("Unavailable trial models fall back to Nemotron after 4 seconds.")
+        else:
                 st.sidebar.warning("Add a supported free-tier API key to `.env`.")
     # Model configuration for supported providers. Keep this visible in mock
     # mode so users can see the available live models before adding credentials.

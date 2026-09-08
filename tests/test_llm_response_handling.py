@@ -17,7 +17,7 @@ class NvidiaResponseHandlingTests(unittest.TestCase):
                 "Groq: fast-model": "groq::fast-model"
             })
 
-    def test_nvidia_pool_lists_fallback_and_models_with_specific_keys(self):
+    def test_general_nvidia_key_exposes_full_research_panel(self):
         values = {
             "OPENAI_API_KEY": "key",
             "OPENAI_BASE_URL": "https://integrate.api.nvidia.com/v1",
@@ -25,10 +25,9 @@ class NvidiaResponseHandlingTests(unittest.TestCase):
             "NVIDIA_KIMI_API_KEY": "kimi-key",
         }
         with patch.dict("os.environ", values, clear=True):
-            self.assertEqual(list(available_free_models().values()), [
-                "openai::nvidia/nemotron-3.5-lightning-30b-a3b",
-                "openai::moonshotai/kimi-k3",
-            ])
+            models = list(available_free_models().values())
+            self.assertEqual(len(models), 6)
+            self.assertEqual(models[0], "openai::nvidia/nemotron-3.5-lightning-30b-a3b")
 
     def test_nvidia_keys_support_three_numbered_keys_and_bearer_prefix(self):
         values = {

@@ -300,6 +300,7 @@ When NVIDIA NIM configured:
 - If every shared free endpoint is rate-limited, unauthorized, or timed out, Quick mode now returns the structured offline strategy instead of terminating the workflow. The UI clearly labels this fallback.
 - The model selector shows every NVIDIA model with a configured model-specific credential (six in the current local setup). Non-default models receive a four-second availability window before falling back to verified Nemotron, and unrelated API keys are no longer retried against the wrong endpoint.
 - Changed the strategy model selector from a collapsed dropdown to an always-visible radio list so every configured comparison model is immediately visible in the sidebar.
+- Deployment fix: a general NVIDIA key now exposes the full six-model research panel even when model-specific override keys are not present. The sidebar uses a compact selector plus a visible catalogue summary, removing the empty expander and oversized radio layout.
 
 ### Recommended Production Multi-Model Panel
 

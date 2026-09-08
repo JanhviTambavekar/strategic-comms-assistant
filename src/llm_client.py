@@ -23,7 +23,7 @@ _RETRYABLE_STATUS = {429, 500, 502, 503, 504, 529}
 _MAX_RETRIES = 3
 
 NVIDIA_MODELS = {
-    "NVIDIA Nemotron 3.5 Lightning 30B": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "Nemotron 3.5 Lightning 30B": "nvidia/nemotron-3.5-lightning-30b-a3b",
     "Kimi K3": "moonshotai/kimi-k3",
     "DeepSeek V4 Pro": "deepseek-ai/deepseek-v4-pro-0813",
     "DeepSeek V4 Flash": "deepseek-ai/deepseek-v4-flash-0731",
@@ -58,10 +58,8 @@ def available_free_models() -> dict[str, str]:
         ordered = [fallback, *NVIDIA_MODELS.values()]
         labels_by_model = {model: label for label, model in NVIDIA_MODELS.items()}
         for model in dict.fromkeys(ordered):
-            key_name = NVIDIA_MODEL_KEY.get(model)
-            if model == fallback or (key_name and os.getenv(key_name)):
-                label = labels_by_model.get(model, model)
-                models[f"NVIDIA: {label}"] = f"openai::{model}"
+            label = labels_by_model.get(model, model)
+            models[f"NVIDIA: {label}"] = f"openai::{model}"
     return models
 
 
