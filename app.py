@@ -38,6 +38,422 @@ load_dotenv(override=True)
 
 st.set_page_config(page_title="Strategic Comms Assistant", page_icon="📣", layout="wide")
 
+# ============================================================================
+# CUSTOM CSS STYLING
+# ============================================================================
+def inject_custom_css():
+    """Inject custom CSS for professional academic design."""
+    css = """
+    <style>
+        /* Page background */
+        .stApp {
+            background-color: #f8f9fa;
+        }
+        
+        /* Main content area */
+        .main {
+            padding: 2rem;
+            background-color: #f8f9fa;
+        }
+        
+        /* Cards and containers */
+        [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"] {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid #e8e8e8;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Headers */
+        h1, h2, h3 {
+            color: #2c3e50;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        h2 {
+            font-size: 1.35rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0.5rem;
+        }
+        
+        h3 {
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        /* Captions and smaller text */
+        .stCaption {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        /* Primary buttons - red/pink */
+        .stButton > button[kind="primary"] {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        
+        .stButton > button[kind="primary"]:hover {
+            background-color: #c0392b;
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+        }
+        
+        /* Secondary buttons */
+        .stButton > button {
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-weight: 500;
+        }
+        
+        /* Form inputs */
+        .stTextInput input,
+        .stTextArea textarea,
+        .stSelectbox select {
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 0.95rem;
+        }
+        
+        .stTextInput input:focus,
+        .stTextArea textarea:focus,
+        .stSelectbox select:focus {
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+        
+        /* Radio buttons and selectbox */
+        .stRadio > label,
+        .stCheckbox > label {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Keep the three persona radio options in a single horizontal row while
+           preserving the existing Streamlit radio selection behaviour. */
+        .main div[data-testid="stRadio"] > div[role="radiogroup"] {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .main div[data-testid="stRadio"] label {
+            width: 100%;
+            margin-right: 0 !important;
+            padding: 0.6rem 0.75rem;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            background-color: #fff;
+            align-items: center;
+            min-height: 44px;
+            white-space: normal;
+        }
+
+        .main div[data-testid="stRadio"] label:hover {
+            border-color: #d0d7de;
+            background-color: #fafbfc;
+        }
+
+        .main div[data-testid="stRadio"] label > div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* File uploader */
+        [data-testid="stFileUploadDropzone"] {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background-color: #fafbfc;
+            transition: all 0.2s ease;
+        }
+        
+        [data-testid="stFileUploadDropzone"]:hover {
+            border-color: #e74c3c;
+            background-color: #fff5f3;
+        }
+        
+        /* Success, warning, error messages */
+        .stSuccess {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+            border-radius: 6px;
+        }
+        
+        .stWarning {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+            border-radius: 6px;
+        }
+        
+        .stError {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+            border-radius: 6px;
+        }
+        
+        .stInfo {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+            border-radius: 6px;
+        }
+        
+        /* Metrics */
+        [data-testid="stMetricContainer"] {
+            background-color: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Tabs */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 2rem;
+            border-bottom: 2px solid #e8e8e8;
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            padding: 0.75rem 0;
+            font-weight: 500;
+        }
+        
+        .stTabs [aria-selected="true"] {
+            color: #e74c3c;
+            border-bottom-color: #e74c3c;
+        }
+        
+        /* Expander */
+        .streamlit-expanderHeader {
+            border-radius: 6px;
+            border: 1px solid #e8e8e8;
+        }
+        
+        /* Table */
+        .stTable {
+            border-radius: 6px;
+            border: 1px solid #e8e8e8;
+        }
+        
+        /* Sidebar styling */
+        .stSidebar {
+            background-color: #ffffff;
+            border-right: 1px solid #e8e8e8;
+            width: 330px !important;
+            max-width: 330px;
+        }
+
+        .stSidebar > div:first-child {
+            padding: 1.25rem 1rem 1.5rem;
+        }
+
+        .stSidebar [data-testid="stVerticalBlock"] {
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            box-shadow: none;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .sidebar-brand-icon {
+            width: 36px;
+            height: 36px;
+            flex: 0 0 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff3f4;
+            color: #e8545a;
+            font-size: 1.05rem;
+            line-height: 1;
+            border: 1px solid #f4d9db;
+        }
+
+        .sidebar-brand-title {
+            font-size: 1.08rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            color: #1f2937;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.82rem;
+            color: #687385;
+            line-height: 1.45;
+            margin: 0 0 0.7rem 0;
+            font-weight: 500;
+        }
+
+        .sidebar-description {
+            font-size: 0.84rem;
+            color: #4b5563;
+            line-height: 1.45;
+            margin: 0 0 0.9rem 0;
+        }
+
+        .sidebar-info-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 0.65rem 0.75rem;
+            margin: 0 0 1rem 0;
+            font-size: 0.8rem;
+            color: #4b4b4b;
+        }
+
+        .sidebar-info-card .card-label {
+            display: inline-block;
+            margin-right: 0.3rem;
+            color: #555;
+        }
+
+        .sidebar-info-card .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2fbf71;
+            margin-right: 0.35rem;
+            vertical-align: middle;
+        }
+
+        .sidebar-info-card .status-dot.mock {
+            background: #f0ad4e;
+        }
+
+        .sidebar-pipeline {
+            margin-top: 1.15rem;
+            padding: 1rem 0 0;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* The workflow is rendered after the optional configuration controls. */
+        .sidebar-pipeline--intro {
+            display: none;
+        }
+
+        .sidebar-pipeline-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin: 0 0 0.65rem 0;
+        }
+
+        .sidebar-pipeline ol {
+            margin: 0;
+            padding-left: 1.35rem;
+            color: #374151;
+            font-size: 0.84rem;
+            line-height: 1.9;
+        }
+
+        .stSidebar .stExpander {
+            margin-top: 0.2rem;
+        }
+
+        .stSidebar .streamlit-expanderHeader {
+            border-radius: 10px;
+            border: 1px solid #dfe5ec;
+            background: #ffffff;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: #374151;
+            padding: 0.6rem 0.75rem;
+        }
+
+        .stSidebar [data-testid="stSelectbox"] {
+            margin-bottom: 0.65rem;
+        }
+
+        .stSidebar [data-testid="stRadio"] > div[role="radiogroup"] {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .stSidebar [data-testid="stRadio"] label {
+            flex: 1 1 0;
+            min-width: 0;
+            margin: 0 !important;
+            padding: 0.5rem 0.55rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 0.78rem;
+            line-height: 1.25;
+        }
+
+        .stSidebar [data-testid="stMarkdownContainer"] > p {
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .stSidebar hr {
+            margin: 0.75rem 0;
+        }
+        
+        /* Divider lines */
+        hr {
+            border: none;
+            border-top: 1px solid #e8e8e8;
+            margin: 1.5rem 0;
+        }
+        
+        /* Code blocks */
+        code {
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            padding: 0.2rem 0.4rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .stCodeBlock {
+            border-radius: 8px;
+            border: 1px solid #e8e8e8;
+        }
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
+
+# Inject CSS at app start
+inject_custom_css()
+
 PERSONAS = load_personas()
 
 PERSONA_BY_RESPONDENT_TYPE = {
@@ -45,6 +461,10 @@ PERSONA_BY_RESPONDENT_TYPE = {
     "SME / Start-up": "sme_innovator",
     "Research Project Team": "research_project",
 }
+
+# ============================================================================
+# UI RENDERING FUNCTIONS - Modular & Reusable
+# ============================================================================
 
 CRITERION_GUIDANCE = {
     "clarity": "Use plain language, remove duplicated material and state recommendations directly.",
@@ -62,9 +482,12 @@ CRITERION_GUIDANCE = {
 # Kept in the UI layer as well as llm_client so a long-lived Streamlit process
 # cannot fail while a module reload is catching up after an application update.
 NVIDIA_MODEL_OPTIONS = {
-    "Meta Llama 3.1 8B Instruct": "meta/llama-3.1-8b-instruct",
-    "Google DiffusionGemma 26B A4B IT": "google/diffusiongemma-26b-a4b-it",
-    "NVIDIA Nemotron Mini 4B Instruct": "nvidia/nemotron-mini-4b-instruct",
+    "NVIDIA Nemotron 3.5 Lightning 30B": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "Kimi K3": "moonshotai/kimi-k3",
+    "DeepSeek V4 Pro": "deepseek-ai/deepseek-v4-pro-0813",
+    "DeepSeek V4 Flash": "deepseek-ai/deepseek-v4-flash-0731",
+    "Google DiffusionGemma": "google/diffusiongemma-26b-a4b-it",
+    "Google Gemma 4 31B": "google/gemma-4-31b-it",
 }
 
 GEMINI_MODEL_OPTIONS = {
@@ -74,106 +497,174 @@ GEMINI_MODEL_OPTIONS = {
 }
 
 
-def sidebar():
-    st.sidebar.title("📣 Strategic Comms Assistant")
-    st.sidebar.caption("AI-Driven Strategic Communications Assistant")
+def render_sidebar() -> dict:
+    """Render the compact left sidebar with LLM configuration."""
     provider = llm_client.get_provider()
+    badges = {
+        "free": "Free model pool",
+        "groq": "Groq free tier",
+        "openrouter": "OpenRouter free",
+        "gemini": "Google Gemini",
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "mock": "Mock / configurable"
+    }
+    badge_text = badges.get(provider, provider)
+
+    st.sidebar.markdown(
+        """
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-icon">📣</div>
+            <div class="sidebar-brand-title">Strategic Comms<br>Assistant</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.sidebar.markdown(
+        '<div class="sidebar-subtitle">AI-Driven Strategic Communications Assistant</div>',
+        unsafe_allow_html=True,
+    )
+    st.sidebar.markdown(
+        '<div class="sidebar-description">Generate a tailored communication and engagement strategy.</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.sidebar.markdown(
+        f"""
+        <div class="sidebar-info-card">
+            <span class="card-label">LLM provider:</span>
+            <span class="status-dot {'mock' if provider == 'mock' else ''}"></span>{badge_text}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if provider == "mock":
+        st.sidebar.info("Running in mock mode. Add an API key to `.env` for tailored output.")
+
     model_selection = {
         "strategy_model": None,
         "judge_model": None,
-        "strategy_max_tokens": 3000,
-        "judge_max_tokens": 500,
+        "strategy_max_tokens": 1800,
+        "judge_max_tokens": 250,
     }
-    badge = {"gemini": "🟢 Google Gemini", "anthropic": "🟢 Anthropic", "openai": "🟢 OpenAI", "mock": "🟡 Mock (no API key)"}
-    st.sidebar.markdown(f"**LLM provider:** {badge.get(provider, provider)}")
-    if provider == "mock":
-        st.sidebar.info("Running in MOCK mode — add an API key to `.env` for tailored output.")
+    if provider in {"free", "groq", "openrouter"}:
+        st.sidebar.markdown("---")
+        with st.sidebar.expander("⚙️ Free Model Configuration", expanded=True):
+            free_models = llm_client.available_free_models()
+            if free_models:
+                labels = list(free_models)
+                strategy_label = st.sidebar.selectbox("Fast strategy model", labels, index=0)
+                judge_index = 1 if len(labels) > 1 else 0
+                judge_label = st.sidebar.selectbox("Independent judge model", labels, index=judge_index)
+                model_selection = {
+                    "strategy_model": free_models[strategy_label],
+                    "judge_model": free_models[judge_label],
+                    "strategy_max_tokens": 1800,
+                    "judge_max_tokens": 250,
+                }
+                st.sidebar.caption("Each request fails over once across configured free services; timeout is bounded by FREE_MODEL_TIMEOUT.")
+            else:
+                st.sidebar.warning("Add a supported free-tier API key to `.env`.")
+    # Model configuration for supported providers. Keep this visible in mock
+    # mode so users can see the available live models before adding credentials.
     if provider == "gemini":
         st.sidebar.markdown("---")
-        st.sidebar.subheader("Google Gemini models")
-        labels = list(GEMINI_MODEL_OPTIONS)
-        configured = os.getenv("GOOGLE_MODEL", "")
-        configured_index = next(
-            (index for index, label in enumerate(labels)
-             if GEMINI_MODEL_OPTIONS[label] == configured),
-            0,
-        )
-        strategy_label = st.sidebar.selectbox(
-            "Strategy generation model", labels, index=configured_index,
-            help="Model used to generate the communication strategy.",
-        )
-        judge_label = st.sidebar.selectbox(
-            "Independent evaluation model", labels, index=1,
-            help="A separate Gemini model used to judge the completed strategy.",
-        )
-        quality = st.sidebar.radio(
-            "Generation mode",
-            ["Fast draft", "Full quality"],
-            horizontal=True,
-            help="Fast draft is recommended on free hosting. Full quality produces a longer report.",
-        )
-        model_selection = {
-            "strategy_model": GEMINI_MODEL_OPTIONS[strategy_label],
-            "judge_model": GEMINI_MODEL_OPTIONS[judge_label],
-            "strategy_max_tokens": 3000 if quality == "Fast draft" else 5000,
-            "judge_max_tokens": 500 if quality == "Fast draft" else 800,
-        }
-        if model_selection["strategy_model"] == model_selection["judge_model"]:
-            st.sidebar.warning("Choose a different evaluation model for an independent comparison.")
-        else:
-            st.sidebar.caption("Generation and evaluation use separate Gemini models.")
-    if provider == "openai" and "nvidia" in (os.getenv("OPENAI_BASE_URL") or "").lower():
+        with st.sidebar.expander("⚙️ Model Configuration", expanded=False):
+            labels = list(GEMINI_MODEL_OPTIONS)
+            configured = os.getenv("GOOGLE_MODEL", "")
+            configured_index = next(
+                (index for index, label in enumerate(labels)
+                 if GEMINI_MODEL_OPTIONS[label] == configured),
+                0,
+            )
+            strategy_label = st.sidebar.selectbox(
+                "Strategy generation model", labels, index=configured_index,
+                help="Model used to generate the communication strategy.",
+            )
+            judge_label = st.sidebar.selectbox(
+                "Independent evaluation model", labels, index=1,
+                help="A separate Gemini model used to judge the completed strategy.",
+            )
+            quality = st.sidebar.radio(
+                "Generation mode",
+                ["Fast draft", "Full quality"],
+                horizontal=True,
+                help="Fast draft returns a concise strategy quickly. Full quality produces a longer report.",
+            )
+            model_selection = {
+                "strategy_model": GEMINI_MODEL_OPTIONS[strategy_label],
+                "judge_model": GEMINI_MODEL_OPTIONS[judge_label],
+                "strategy_max_tokens": 1800 if quality == "Fast draft" else 3500,
+                "judge_max_tokens": 250 if quality == "Fast draft" else 600,
+            }
+            if model_selection["strategy_model"] == model_selection["judge_model"]:
+                st.sidebar.warning("Choose a different evaluation model for an independent comparison.")
+    elif provider == "mock":
         st.sidebar.markdown("---")
-        st.sidebar.subheader("NVIDIA NIM models")
-        labels = list(NVIDIA_MODEL_OPTIONS)
-        configured = os.getenv("OPENAI_MODEL", "")
-        configured_index = next(
-            (index for index, label in enumerate(labels)
-             if NVIDIA_MODEL_OPTIONS[label] == configured),
-            0,
-        )
-        strategy_label = st.sidebar.selectbox(
-            "Strategy generation model", labels, index=configured_index,
-            help="Model used to generate the communication strategy.",
-        )
-        judge_label = st.sidebar.selectbox(
-            "Independent evaluation model",
-            labels,
-            index=labels.index("Google DiffusionGemma 26B A4B IT"),
-            help="Model used only to judge the completed strategy.",
-        )
-        quality = st.sidebar.radio(
-            "Generation mode",
-            ["Fast draft", "Full quality"],
-            horizontal=True,
-            help="Fast draft reduces response length. Full quality is better for the final dissertation output but can take several minutes on large models.",
-        )
-        model_selection = {
-            "strategy_model": NVIDIA_MODEL_OPTIONS[strategy_label],
-            "judge_model": NVIDIA_MODEL_OPTIONS[judge_label],
-            "strategy_max_tokens": 3000 if quality == "Fast draft" else 5000,
-            "judge_max_tokens": 500 if quality == "Fast draft" else 800,
-        }
-        # NVIDIA documents a 4,096-token output ceiling for DiffusionGemma.
-        if model_selection["strategy_model"] == "google/diffusiongemma-26b-a4b-it":
-            model_selection["strategy_max_tokens"] = min(
-                model_selection["strategy_max_tokens"], 4096
+        with st.sidebar.expander("⚙️ Model Configuration", expanded=False):
+            st.sidebar.caption("Live providers and models are configured in `.env`.")
+            st.sidebar.selectbox(
+                "Provider", ["Mock (current)", "NVIDIA NIM", "Google Gemini", "Anthropic", "OpenAI"],
+                index=0,
+                disabled=True,
+                help="Change LLM_PROVIDER and the matching API key in .env to enable a live provider.",
             )
-        if model_selection["strategy_model"] == "google/diffusiongemma-26b-a4b-it":
-            st.sidebar.info(
-                "DiffusionGemma is larger than Llama and may queue on NVIDIA's shared hosted service. "
-                "Use Llama 3.1 8B for reliable quick tests."
+            st.sidebar.selectbox(
+                "Available model", list(NVIDIA_MODEL_OPTIONS),
+                index=0,
+                disabled=True,
+                help="These models become selectable when NVIDIA NIM is enabled.",
             )
-        if model_selection["strategy_model"] == model_selection["judge_model"]:
-            st.sidebar.warning("Choose a different evaluation model for an independent comparison.")
-        else:
-            st.sidebar.caption("Generation and evaluation use separate models.")
+            st.sidebar.text_input(
+                "API key status", value="Configured in .env", type="password", disabled=True,
+            )
+    elif provider == "openai" and "nvidia" in (os.getenv("OPENAI_BASE_URL") or "").lower():
+        st.sidebar.markdown("---")
+        with st.sidebar.expander("⚙️ Model Configuration", expanded=False):
+            labels = list(NVIDIA_MODEL_OPTIONS)
+            configured = os.getenv("OPENAI_MODEL", "")
+            configured_index = next(
+                (index for index, label in enumerate(labels)
+                 if NVIDIA_MODEL_OPTIONS[label] == configured),
+                0,
+            )
+            strategy_label = st.sidebar.selectbox(
+                "Strategy generation model", labels, index=configured_index,
+                help="Model used to generate the communication strategy.",
+            )
+            judge_label = st.sidebar.selectbox(
+                "Independent evaluation model",
+                labels,
+                index=min(3, len(labels) - 1),
+                help="Model used only to judge the completed strategy.",
+            )
+            quality = st.sidebar.radio(
+                "Generation mode",
+                ["Fast draft", "Full quality"],
+                horizontal=True,
+                help="Fast draft reduces response length and evaluation time. Full quality is better for the final dissertation output but takes longer.",
+            )
+            model_selection = {
+                "strategy_model": NVIDIA_MODEL_OPTIONS[strategy_label],
+                "judge_model": NVIDIA_MODEL_OPTIONS[judge_label],
+                "strategy_max_tokens": 1800 if quality == "Fast draft" else 3500,
+                "judge_max_tokens": 250 if quality == "Fast draft" else 600,
+            }
+            if model_selection["strategy_model"] == model_selection["judge_model"]:
+                st.sidebar.warning("Choose a different evaluation model for an independent comparison.")
+    
+    # Display Pipeline
     st.sidebar.markdown("---")
+    st.sidebar.markdown("**Pipeline**")
     st.sidebar.markdown(
-        "**Pipeline**\n\n"
-        "1. Persona selection\n2. Questionnaire + upload\n3. Knowledge-tree routing\n"
-        "4. Prompt build → LLM\n5. Strategy + evaluation"
+        "1. Persona selection\n"
+        "2. Questionnaire + upload\n"
+        "3. Knowledge-tree routing\n"
+        "4. Prompt build → LLM\n"
+        "5. Strategy + evaluation"
     )
+    
     return model_selection
 
 
@@ -237,7 +728,7 @@ def ensure_current_modules() -> None:
 
 def main():
     ensure_current_modules()
-    model_selection = sidebar()
+    model_selection = render_sidebar()
     st.title("AI-Driven Strategic Communications Assistant")
     st.caption("Generate a tailored communication & engagement plan in a few steps.")
 
@@ -247,7 +738,8 @@ def main():
     persona_key = st.radio(
         "Which best describes you?",
         persona_keys,
-        format_func=lambda k: f"{PERSONAS[k]['label']} — {PERSONAS[k]['description']}",
+        format_func=lambda k: PERSONAS[k]["label"],
+        horizontal=True,
     )
     persona = PERSONAS[persona_key]
 

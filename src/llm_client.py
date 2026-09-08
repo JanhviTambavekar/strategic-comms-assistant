@@ -1,6 +1,7 @@
 """LLM provider abstraction.
 
-Supports Google Gemini, Anthropic and OpenAI, plus a 'mock' provider that returns
+Supports Google Gemini, Anthropic, OpenAI and free OpenAI-compatible services,
+plus a 'mock' provider that returns
 a realistic canned strategy so the project can be demoed with NO API key. The
 provider is chosen via the LLM_PROVIDER env var (see .env.example).
 """
@@ -22,10 +23,72 @@ _RETRYABLE_STATUS = {429, 500, 502, 503, 504, 529}
 _MAX_RETRIES = 3
 
 NVIDIA_MODELS = {
-    "Meta Llama 3.1 8B Instruct": "meta/llama-3.1-8b-instruct",
-    "Google DiffusionGemma 26B A4B IT": "google/diffusiongemma-26b-a4b-it",
-    "NVIDIA Nemotron Mini 4B Instruct": "nvidia/nemotron-mini-4b-instruct",
+    "NVIDIA Nemotron 3.5 Lightning 30B": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "Kimi K3": "moonshotai/kimi-k3",
+    "DeepSeek V4 Pro": "deepseek-ai/deepseek-v4-pro-0813",
+    "DeepSeek V4 Flash": "deepseek-ai/deepseek-v4-flash-0731",
+    "Google DiffusionGemma": "google/diffusiongemma-26b-a4b-it",
+    "Google Gemma 4 31B": "google/gemma-4-31b-it",
 }
+
+
+def available_free_models() -> dict[str, str]:
+    """Return configured no-cost/free-tier targets for the model selectors."""
+    models = {}
+    if os.getenv("GROQ_API_KEY"):
+        model = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+        models[f"Groq · {model}"] = f"groq::{model}"
+    if os.getenv("OPENROUTER_API_KEY"):
+        model = os.getenv("OPENROUTER_MODEL", "openrouter/free")
+        models[f"OpenRouter · {model}"] = f"openrouter::{model}"
+    if os.getenv("GOOGLE_API_KEY"):
+        model = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash-lite")
+        models[f"Gemini · {model}"] = f"gemini::{model}"
+    if os.getenv("OPENAI_API_KEY") and "nvidia" in (os.getenv("OPENAI_BASE_URL") or "").lower():
+        for label, model in NVIDIA_MODELS.items():
+            models[f"NVIDIA · {label}"] = f"openai::{model}"
+    return models
+
+
+def nvidia_api_keys(model: str | None = None) -> list[str]:
+    """Return configured NVIDIA keys in order, without duplicates."""
+    model = model or ""
+    model_key_names = []
+    if model.startswith("google/diffusiongemma"):
+        model_key_names = ["NVIDIA_DIFFUSIONGEMMA_API_KEY", "NVIDIA_GEMMA_API_KEY"]
+    elif model == "google/gemma-4-31b-it":
+        model_key_names = ["NVIDIA_GEMMA_API_KEY"]
+    elif model == "moonshotai/kimi-k3":
+        model_key_names = ["NVIDIA_KIMI_API_KEY"]
+    elif model == "deepseek-ai/deepseek-v4-pro-0813":
+        model_key_names = ["NVIDIA_DEEPSEEK_PRO_API_KEY"]
+    elif model == "deepseek-ai/deepseek-v4-flash-0731":
+        model_key_names = ["NVIDIA_DEEPSEEK_FLASH_API_KEY"]
+    elif model.startswith("nvidia/nemotron-mini"):
+        model_key_names = ["NVIDIA_NEMOTRON_API_KEY"]
+    elif model.startswith("qwen/"):
+        model_key_names = ["NVIDIA_QWEN_API_KEY"]
+
+    names = [
+        "NVIDIA_API_KEY_1",
+        "NVIDIA_API_KEY_2",
+        "NVIDIA_API_KEY_3",
+        *model_key_names,
+        "NVIDIA_DIFFUSIONGEMMA_API_KEY",
+        "NVIDIA_NEMOTRON_API_KEY",
+        "NVIDIA_QWEN_API_KEY",
+        "NVIDIA_GEMMA_API_KEY",
+        "NVIDIA_GLM_API_KEY",
+        "OPENAI_API_KEY",
+    ]
+    keys = []
+    for name in names:
+        value = (os.getenv(name) or "").strip()
+        if value.lower().startswith("bearer "):
+            value = value[7:].strip()
+        if value and value not in keys:
+            keys.append(value)
+    return keys
 
 
 def _message_content_text(message: dict) -> str:
@@ -53,9 +116,11 @@ def get_provider() -> str:
     auto-detect from whichever key is available.
     """
     explicit = (os.getenv("LLM_PROVIDER") or "").strip().lower()
-    if explicit in {"gemini", "anthropic", "openai", "mock"}:
+    if explicit in {"free", "groq", "openrouter", "gemini", "anthropic", "openai", "mock"}:
         return explicit
     # No explicit provider -> auto-detect from available keys, else mock.
+    if os.getenv("GROQ_API_KEY") or os.getenv("OPENROUTER_API_KEY"):
+        return "free"
     if os.getenv("GOOGLE_API_KEY"):
         return "gemini"
     if os.getenv("ANTHROPIC_API_KEY"):
@@ -73,6 +138,15 @@ def generate_with_usage(prompt: str, max_tokens: int = 2000, model: str | None =
     times, then raises LLMError with a friendly message.
     """
     provider = get_provider()
+    target_provider = None
+    if model and "::" in model:
+        target_provider, model = model.split("::", 1)
+    if provider == "free" or target_provider:
+        return _free_generate(prompt, max_tokens, preferred_provider=target_provider, model=model)
+    if provider == "groq":
+        return _with_retries(_groq, prompt, max_tokens, provider="Groq", model=model)
+    if provider == "openrouter":
+        return _with_retries(_openrouter, prompt, max_tokens, provider="OpenRouter", model=model)
     if provider == "gemini":
         return _with_retries(_gemini, prompt, max_tokens, provider="Gemini", model=model)
     if provider == "anthropic":
@@ -80,6 +154,31 @@ def generate_with_usage(prompt: str, max_tokens: int = 2000, model: str | None =
     if provider == "openai":
         return _with_retries(_openai, prompt, max_tokens, provider="OpenAI", model=model)
     return _mock(prompt)
+
+
+def _free_generate(prompt: str, max_tokens: int, preferred_provider: str | None, model: str | None):
+    """Try configured free services once each, failing over quickly."""
+    candidates = []
+    if preferred_provider:
+        candidates.append((preferred_provider, model))
+    for target in available_free_models().values():
+        provider, candidate_model = target.split("::", 1)
+        if (provider, candidate_model) not in candidates:
+            candidates.append((provider, candidate_model))
+
+    errors = []
+    handlers = {"groq": _groq, "openrouter": _openrouter, "gemini": _gemini, "openai": _openai}
+    for provider, candidate_model in candidates:
+        handler = handlers.get(provider)
+        if not handler:
+            continue
+        try:
+            return handler(prompt, max_tokens, candidate_model)
+        except Exception as exc:  # one attempt per free endpoint keeps latency bounded
+            errors.append(f"{provider}: {_status_code(exc) or type(exc).__name__}")
+    if not candidates:
+        raise LLMError("No free-model API key is configured. Add GROQ_API_KEY, OPENROUTER_API_KEY, GOOGLE_API_KEY, or an NVIDIA key.")
+    raise LLMError("All configured free models were unavailable (" + ", ".join(errors) + ").")
 
 
 def generate(prompt: str, max_tokens: int = 2000, model: str | None = None) -> str:
@@ -115,7 +214,7 @@ def _friendly_message(provider: str, exc: Exception, status) -> str:
     if "timeout" in type(exc).__name__.lower():
         return (
             f"{provider} did not respond before the configured timeout. "
-            "Try the Fast draft mode or select the smaller Llama model."
+            "Try Fast draft mode; the app will also retry with Nemotron 3.5 Lightning."
         )
     if status == 401:
         return (f"{provider} rejected the API key (401 Unauthorized). "
@@ -210,36 +309,51 @@ def _openai(prompt: str, max_tokens: int, selected_model: str | None = None):
     return text, usage
 
 
+def _openai_compatible(prompt: str, max_tokens: int, *, api_key: str, base_url: str,
+                       model: str, provider: str):
+    """Call a small OpenAI-compatible endpoint with a bounded timeout."""
+    from openai import OpenAI
+    client = OpenAI(api_key=api_key, base_url=base_url, timeout=float(os.getenv("FREE_MODEL_TIMEOUT", "25")), max_retries=0)
+    resp = client.chat.completions.create(
+        model=model, max_tokens=max_tokens, temperature=0.2,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    text = (resp.choices[0].message.content or "").strip()
+    if not text:
+        raise ValueError(f"{provider} returned no usable text.")
+    u = getattr(resp, "usage", None)
+    return text, cost.Usage(
+        provider=provider, model=model,
+        input_tokens=getattr(u, "prompt_tokens", 0) if u else 0,
+        output_tokens=getattr(u, "completion_tokens", 0) if u else 0,
+    )
+
+
+def _groq(prompt: str, max_tokens: int, selected_model: str | None = None):
+    return _openai_compatible(
+        prompt, max_tokens, api_key=os.getenv("GROQ_API_KEY", ""),
+        base_url="https://api.groq.com/openai/v1",
+        model=selected_model or os.getenv("GROQ_MODEL", "openai/gpt-oss-20b"), provider="groq",
+    )
+
+
+def _openrouter(prompt: str, max_tokens: int, selected_model: str | None = None):
+    return _openai_compatible(
+        prompt, max_tokens, api_key=os.getenv("OPENROUTER_API_KEY", ""),
+        base_url="https://openrouter.ai/api/v1",
+        model=selected_model or os.getenv("OPENROUTER_MODEL", "openrouter/free"), provider="openrouter",
+    )
+
+
 def _nvidia(prompt: str, max_tokens: int, base_url: str, model: str):
     """Call NVIDIA NIM API directly using requests (per NVIDIA's docs)."""
     import requests
 
-    # Keep provider credentials outside source control. Separate optional keys
-    # make it easy to rotate or change credentials by model in .env.
-    key_by_model_prefix = {
-        "google/diffusiongemma": "NVIDIA_DIFFUSIONGEMMA_API_KEY",
-        "nvidia/nemotron-mini": "NVIDIA_NEMOTRON_API_KEY",
-        "qwen/": "NVIDIA_QWEN_API_KEY",
-    }
-    api_key = next(
-        (
-            os.getenv(env_name)
-            for prefix, env_name in key_by_model_prefix.items()
-            if model.startswith(prefix) and os.getenv(env_name)
-        ),
-        None,
-    ) or os.getenv("OPENAI_API_KEY")
-    # Users may paste an entire Authorization value from provider examples.
-    # Store either form in .env; normalise it before constructing the header.
-    api_key = (api_key or "").strip()
-    if api_key.lower().startswith("bearer "):
-        api_key = api_key[7:].strip()
+    api_keys = nvidia_api_keys(model)
+    api_key = api_keys[0] if api_keys else ""
 
     invoke_url = base_url.rstrip("/") + "/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Accept": "application/json",
-    }
+    headers = {"Accept": "application/json"}
     request_prompt = prompt
     if model == "nvidia/nemotron-mini-4b-instruct" and len(prompt) > 9000:
         # Nemotron Mini has a much smaller practical context budget than the
@@ -271,7 +385,7 @@ def _nvidia(prompt: str, max_tokens: int, base_url: str, model: str):
         payload["top_p"] = 0.7
     # Do not leave the Streamlit UI waiting indefinitely. The value can be
     # increased in .env for unusually long, full-quality generations.
-    timeout_seconds = int(os.getenv("NVIDIA_REQUEST_TIMEOUT", "120"))
+    timeout_seconds = int(os.getenv("NVIDIA_REQUEST_TIMEOUT", "15"))
     # Fail over sooner for NVIDIA trial models that regularly sit in a shared
     # queue. Llama retains the full configured timeout because it is the
     # reliable fallback target.
@@ -279,20 +393,31 @@ def _nvidia(prompt: str, max_tokens: int, base_url: str, model: str):
         timeout_seconds = min(timeout_seconds, 50)
     elif model == "google/diffusiongemma-26b-a4b-it":
         timeout_seconds = min(timeout_seconds, 70)
-    try:
-        response = requests.post(
-            invoke_url,
-            headers=headers,
-            json=payload,
-            timeout=(10, timeout_seconds),
-        )
-    except requests.Timeout:
+    response = None
+    last_timeout = None
+    for candidate_key in api_keys or [""]:
+        headers["Authorization"] = f"Bearer {candidate_key}"
+        try:
+            response = requests.post(
+                invoke_url,
+                headers=headers,
+                json=payload,
+                timeout=(10, timeout_seconds),
+            )
+        except requests.Timeout as exc:
+            last_timeout = exc
+            continue
+        if response.status_code not in {401, 403, 429}:
+            break
+
+    if response is None:
         fallback_model = os.getenv(
-            "NVIDIA_FALLBACK_MODEL", "meta/llama-3.1-8b-instruct"
+            "NVIDIA_FALLBACK_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b"
         ).strip()
         if model != fallback_model:
             return _nvidia(prompt, max_tokens, base_url, fallback_model)
-        raise
+        if last_timeout is not None:
+            raise last_timeout
     # Some Nemotron deployments enforce a smaller combined context limit than
     # their catalogue metadata suggests. Retry once with a stricter budget.
     if response.status_code == 400 and model == "nvidia/nemotron-mini-4b-instruct":
@@ -304,6 +429,15 @@ def _nvidia(prompt: str, max_tokens: int, base_url: str, model: str):
             json=payload,
             timeout=(10, timeout_seconds),
         )
+    # A previously saved sidebar choice may point at an NVIDIA endpoint that
+    # has since been retired. Continue with the current default once instead
+    # of failing an otherwise valid strategy request.
+    if response.status_code == 410:
+        fallback_model = os.getenv(
+            "NVIDIA_FALLBACK_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b"
+        ).strip()
+        if model != fallback_model:
+            return _nvidia(prompt, max_tokens, base_url, fallback_model)
     try:
         response.raise_for_status()
     except requests.HTTPError as exc:
@@ -326,7 +460,7 @@ def _nvidia(prompt: str, max_tokens: int, base_url: str, model: str):
     text = _message_content_text(message)
     if not text:
         fallback_model = os.getenv(
-            "NVIDIA_FALLBACK_MODEL", "meta/llama-3.1-8b-instruct"
+            "NVIDIA_FALLBACK_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b"
         ).strip()
         if model != fallback_model:
             return _nvidia(prompt, max_tokens, base_url, fallback_model)
