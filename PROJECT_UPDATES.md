@@ -301,6 +301,7 @@ When NVIDIA NIM configured:
 - The model selector shows every NVIDIA model with a configured model-specific credential (six in the current local setup). Non-default models receive a four-second availability window before falling back to verified Nemotron, and unrelated API keys are no longer retried against the wrong endpoint.
 - Changed the strategy model selector from a collapsed dropdown to an always-visible radio list so every configured comparison model is immediately visible in the sidebar.
 - Deployment fix: a general NVIDIA key now exposes the full six-model research panel even when model-specific override keys are not present. The sidebar uses a compact selector plus a visible catalogue summary, removing the empty expander and oversized radio layout.
+- Re-researched the panel against NVIDIA's official live catalog and authenticated `/v1/models` response. Retired/speculative Kimi and DeepSeek entries were replaced by role-appropriate current free endpoints: Nemotron Lightning, Nemotron Nano Omni, GPT-OSS 20B, Muse Glimmer, Gemma 4, and DiffusionGemma. See `docs/nvidia_free_model_panel.md` for roles and verified availability caveats.
 
 ### Recommended Production Multi-Model Panel
 

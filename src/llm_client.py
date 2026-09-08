@@ -23,19 +23,19 @@ _RETRYABLE_STATUS = {429, 500, 502, 503, 504, 529}
 _MAX_RETRIES = 3
 
 NVIDIA_MODELS = {
-    "Nemotron 3.5 Lightning 30B": "nvidia/nemotron-3.5-lightning-30b-a3b",
-    "Kimi K3": "moonshotai/kimi-k3",
-    "DeepSeek V4 Pro": "deepseek-ai/deepseek-v4-pro-0813",
-    "DeepSeek V4 Flash": "deepseek-ai/deepseek-v4-flash-0731",
-    "Google DiffusionGemma": "google/diffusiongemma-26b-a4b-it",
-    "Google Gemma 4 31B": "google/gemma-4-31b-it",
+    "Nemotron 3.5 Lightning 30B - Fast strategy": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "Nemotron 3 Nano Omni 30B - Document reasoning": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+    "GPT-OSS 20B - Rubric evaluation": "openai/gpt-oss-20b",
+    "Muse Glimmer 30B - Creative messaging": "meta/muse-glimmer-30b",
+    "Gemma 4 31B - Long-context synthesis": "google/gemma-4-31b-it",
+    "DiffusionGemma 26B - Experimental speed": "google/diffusiongemma-26b-a4b-it",
 }
 
 NVIDIA_MODEL_KEY = {
     "nvidia/nemotron-3.5-lightning-30b-a3b": "NVIDIA_NEMOTRON_API_KEY",
-    "moonshotai/kimi-k3": "NVIDIA_KIMI_API_KEY",
-    "deepseek-ai/deepseek-v4-pro-0813": "NVIDIA_DEEPSEEK_PRO_API_KEY",
-    "deepseek-ai/deepseek-v4-flash-0731": "NVIDIA_DEEPSEEK_FLASH_API_KEY",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": "NVIDIA_NEMOTRON_OMNI_API_KEY",
+    "openai/gpt-oss-20b": "NVIDIA_GPT_OSS_API_KEY",
+    "meta/muse-glimmer-30b": "NVIDIA_MUSE_API_KEY",
     "google/diffusiongemma-26b-a4b-it": "NVIDIA_DIFFUSIONGEMMA_API_KEY",
     "google/gemma-4-31b-it": "NVIDIA_GEMMA_API_KEY",
 }
@@ -67,16 +67,13 @@ def nvidia_api_keys(model: str | None = None) -> list[str]:
     """Return configured NVIDIA keys in order, without duplicates."""
     model = model or ""
     model_key_names = []
-    if model.startswith("google/diffusiongemma"):
+    configured_key = NVIDIA_MODEL_KEY.get(model)
+    if configured_key:
+        model_key_names = [configured_key]
+    elif model.startswith("google/diffusiongemma"):
         model_key_names = ["NVIDIA_DIFFUSIONGEMMA_API_KEY", "NVIDIA_GEMMA_API_KEY"]
     elif model == "google/gemma-4-31b-it":
         model_key_names = ["NVIDIA_GEMMA_API_KEY"]
-    elif model == "moonshotai/kimi-k3":
-        model_key_names = ["NVIDIA_KIMI_API_KEY"]
-    elif model == "deepseek-ai/deepseek-v4-pro-0813":
-        model_key_names = ["NVIDIA_DEEPSEEK_PRO_API_KEY"]
-    elif model == "deepseek-ai/deepseek-v4-flash-0731":
-        model_key_names = ["NVIDIA_DEEPSEEK_FLASH_API_KEY"]
     elif model.startswith("nvidia/nemotron-mini"):
         model_key_names = ["NVIDIA_NEMOTRON_API_KEY"]
     elif model.startswith("qwen/"):

@@ -481,14 +481,7 @@ CRITERION_GUIDANCE = {
 
 # Kept in the UI layer as well as llm_client so a long-lived Streamlit process
 # cannot fail while a module reload is catching up after an application update.
-NVIDIA_MODEL_OPTIONS = {
-    "NVIDIA Nemotron 3.5 Lightning 30B": "nvidia/nemotron-3.5-lightning-30b-a3b",
-    "Kimi K3": "moonshotai/kimi-k3",
-    "DeepSeek V4 Pro": "deepseek-ai/deepseek-v4-pro-0813",
-    "DeepSeek V4 Flash": "deepseek-ai/deepseek-v4-flash-0731",
-    "Google DiffusionGemma": "google/diffusiongemma-26b-a4b-it",
-    "Google Gemma 4 31B": "google/gemma-4-31b-it",
-}
+NVIDIA_MODEL_OPTIONS = llm_client.NVIDIA_MODELS
 
 GEMINI_MODEL_OPTIONS = {
     "Gemini 3.5 Flash-Lite": "gemini-3.5-flash-lite",
