@@ -31,6 +31,15 @@ NVIDIA_MODELS = {
     "Google Gemma 4 31B": "google/gemma-4-31b-it",
 }
 
+NVIDIA_MODEL_KEY = {
+    "nvidia/nemotron-3.5-lightning-30b-a3b": "NVIDIA_NEMOTRON_API_KEY",
+    "moonshotai/kimi-k3": "NVIDIA_KIMI_API_KEY",
+    "deepseek-ai/deepseek-v4-pro-0813": "NVIDIA_DEEPSEEK_PRO_API_KEY",
+    "deepseek-ai/deepseek-v4-flash-0731": "NVIDIA_DEEPSEEK_FLASH_API_KEY",
+    "google/diffusiongemma-26b-a4b-it": "NVIDIA_DIFFUSIONGEMMA_API_KEY",
+    "google/gemma-4-31b-it": "NVIDIA_GEMMA_API_KEY",
+}
+
 
 def available_free_models() -> dict[str, str]:
     """Return configured no-cost/free-tier targets for the model selectors."""
@@ -45,16 +54,14 @@ def available_free_models() -> dict[str, str]:
         model = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash-lite")
         models[f"Gemini · {model}"] = f"gemini::{model}"
     if os.getenv("OPENAI_API_KEY") and "nvidia" in (os.getenv("OPENAI_BASE_URL") or "").lower():
-        # Expose only configured NVIDIA targets. Listing the whole catalogue
-        # caused a single request to walk several slow/retired endpoints.
-        configured = [
-            os.getenv("NVIDIA_FALLBACK_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b"),
-            os.getenv("OPENAI_MODEL", ""),
-        ]
+        fallback = os.getenv("NVIDIA_FALLBACK_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b")
+        ordered = [fallback, *NVIDIA_MODELS.values()]
         labels_by_model = {model: label for label, model in NVIDIA_MODELS.items()}
-        for model in dict.fromkeys(item.strip() for item in configured if item.strip()):
-            label = labels_by_model.get(model, model)
-            models[f"NVIDIA · {label}"] = f"openai::{model}"
+        for model in dict.fromkeys(ordered):
+            key_name = NVIDIA_MODEL_KEY.get(model)
+            if model == fallback or (key_name and os.getenv(key_name)):
+                label = labels_by_model.get(model, model)
+                models[f"NVIDIA · {label}"] = f"openai::{model}"
     return models
 
 
@@ -82,11 +89,6 @@ def nvidia_api_keys(model: str | None = None) -> list[str]:
         "NVIDIA_API_KEY_2",
         "NVIDIA_API_KEY_3",
         *model_key_names,
-        "NVIDIA_DIFFUSIONGEMMA_API_KEY",
-        "NVIDIA_NEMOTRON_API_KEY",
-        "NVIDIA_QWEN_API_KEY",
-        "NVIDIA_GEMMA_API_KEY",
-        "NVIDIA_GLM_API_KEY",
         "OPENAI_API_KEY",
     ]
     keys = []
@@ -398,6 +400,11 @@ def _nvidia(prompt: str, max_tokens: int, base_url: str, model: str):
     # Do not leave the Streamlit UI waiting indefinitely. The value can be
     # increased in .env for unusually long, full-quality generations.
     timeout_seconds = int(os.getenv("NVIDIA_REQUEST_TIMEOUT", "15"))
+    fallback_model = os.getenv(
+        "NVIDIA_FALLBACK_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b"
+    ).strip()
+    if model != fallback_model:
+        timeout_seconds = min(timeout_seconds, int(os.getenv("NVIDIA_EXPERIMENTAL_TIMEOUT", "4")))
     # Fail over sooner for NVIDIA trial models that regularly sit in a shared
     # queue. Llama retains the full configured timeout because it is the
     # reliable fallback target.

@@ -298,6 +298,7 @@ When NVIDIA NIM configured:
 - Credentials remain local in `.env`; only blank configuration examples are tracked by Git.
 - Quick mode now performs one 700-token generation call and runs evaluation locally, removing the second sequential LLM request. Detailed mode retains the full independent LLM judge for research-quality comparisons.
 - If every shared free endpoint is rate-limited, unauthorized, or timed out, Quick mode now returns the structured offline strategy instead of terminating the workflow. The UI clearly labels this fallback.
+- The model selector shows every NVIDIA model with a configured model-specific credential (six in the current local setup). Non-default models receive a four-second availability window before falling back to verified Nemotron, and unrelated API keys are no longer retried against the wrong endpoint.
 
 ### Recommended Production Multi-Model Panel
 

@@ -575,6 +575,10 @@ def render_sidebar() -> dict:
                     "use_llm_judge": speed != "Quick",
                 }
                 st.sidebar.caption("Fast fallback is enabled across distinct configured services.")
+                st.sidebar.caption(
+                    f"{len(labels)} configured models shown. Experimental NVIDIA models "
+                    "fall back to Nemotron after 4 seconds when unavailable."
+                )
             else:
                 st.sidebar.warning("Add a supported free-tier API key to `.env`.")
     # Model configuration for supported providers. Keep this visible in mock
