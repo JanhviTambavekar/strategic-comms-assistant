@@ -66,7 +66,7 @@ realistic canned strategy + scores. This means **the demo always works** — use
 for showing the flow to your professor offline. To produce genuinely tailored,
 client-specific strategies, add an API key to `.env`:
 
-- **Free-model pool (recommended):** set `LLM_PROVIDER=free` and configure two or more distinct providers: Groq, OpenRouter, Gemini, Cloudflare Workers AI, or NVIDIA. The sidebar lets generation and evaluation use different models and automatically fails over when a free endpoint is unavailable. Multiple NVIDIA model names still count as one provider and do not protect against a NVIDIA-wide outage.
+- **Free-model pool (recommended):** set `LLM_PROVIDER=free`. The comparison panel exposes four verified Groq models (Qwen 3.8, Qwen 3.6, GPT-OSS 20B, and GPT-OSS 120B), plus configured Gemini, OpenRouter, or Cloudflare models. Generation and evaluation can use different models and automatically fail over across providers. NVIDIA trial endpoints are excluded because repeated timeouts made interactive runs unreliable.
 - **Google Gemini:** set `LLM_PROVIDER=gemini` and `GOOGLE_API_KEY=...` (from https://aistudio.google.com/apikey)
 - **Anthropic:** set `LLM_PROVIDER=anthropic` and `ANTHROPIC_API_KEY=...`
 - **OpenAI:** set `LLM_PROVIDER=openai` and `OPENAI_API_KEY=...`

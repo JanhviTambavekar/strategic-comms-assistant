@@ -29,7 +29,7 @@ class NvidiaResponseHandlingTests(unittest.TestCase):
                     "cloudflare::@cf/google/gemma-3-12b-it"
             })
 
-    def test_general_nvidia_key_exposes_full_research_panel(self):
+    def test_nvidia_key_is_not_exposed_in_research_panel(self):
         values = {
             "OPENAI_API_KEY": "key",
             "OPENAI_BASE_URL": "https://integrate.api.nvidia.com/v1",
@@ -37,9 +37,7 @@ class NvidiaResponseHandlingTests(unittest.TestCase):
             "NVIDIA_KIMI_API_KEY": "kimi-key",
         }
         with patch.dict("os.environ", values, clear=True):
-            models = list(available_free_models().values())
-            self.assertEqual(len(models), 6)
-            self.assertEqual(models[0], "openai::nvidia/nemotron-3.5-lightning-30b-a3b")
+            self.assertEqual(available_free_models(), {})
 
     def test_nvidia_keys_support_three_numbered_keys_and_bearer_prefix(self):
         values = {

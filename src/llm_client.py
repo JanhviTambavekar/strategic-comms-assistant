@@ -66,13 +66,9 @@ def available_free_models() -> dict[str, str]:
     if os.getenv("CLOUDFLARE_API_TOKEN") and os.getenv("CLOUDFLARE_ACCOUNT_ID"):
         model = os.getenv("CLOUDFLARE_MODEL", "@cf/google/gemma-3-12b-it")
         models[f"Cloudflare: {model}"] = f"cloudflare::{model}"
-    if os.getenv("OPENAI_API_KEY") and "nvidia" in (os.getenv("OPENAI_BASE_URL") or "").lower():
-        fallback = os.getenv("NVIDIA_FALLBACK_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b")
-        ordered = [fallback, *NVIDIA_MODELS.values()]
-        labels_by_model = {model: label for label, model in NVIDIA_MODELS.items()}
-        for model in dict.fromkeys(ordered):
-            label = labels_by_model.get(model, model)
-            models[f"NVIDIA: {label}"] = f"openai::{model}"
+    # NVIDIA trial endpoints are intentionally excluded from the active pool:
+    # repeated hosted-service timeouts made them unsuitable for the live demo.
+    # The legacy client remains below for explicit older configurations.
     return models
 
 
@@ -185,7 +181,7 @@ def _free_generate(prompt: str, max_tokens: int, preferred_provider: str | None,
     for target in available_free_models().values():
         provider, candidate_model = target.split("::", 1)
         # Fail over across services, not across a long catalogue on the same
-        # hosted service. NVIDIA performs its own single model fallback.
+        # hosted service, so latency remains bounded.
         if provider not in seen_providers:
             candidates.append((provider, candidate_model))
             seen_providers.add(provider)
@@ -204,7 +200,7 @@ def _free_generate(prompt: str, max_tokens: int, preferred_provider: str | None,
         except Exception as exc:  # one attempt per free endpoint keeps latency bounded
             errors.append(f"{provider}: {_status_code(exc) or type(exc).__name__}")
     if not candidates:
-        raise LLMError("No free-model API key is configured. Add a Groq, OpenRouter, Gemini, Cloudflare, or NVIDIA credential.")
+        raise LLMError("No free-model API key is configured. Add a Groq, OpenRouter, Gemini, or Cloudflare credential.")
     raise LLMError("All configured free models were unavailable (" + ", ".join(errors) + ").")
 
 

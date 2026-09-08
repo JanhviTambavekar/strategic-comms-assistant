@@ -552,7 +552,7 @@ def render_sidebar() -> dict:
                 distinct_providers = {target.split("::", 1)[0] for target in free_models.values()}
                 strategy_label = st.sidebar.selectbox(
                     "Strategy model", labels, index=0,
-                    help="Choose a free/free-tier model. Unavailable NVIDIA trial models fall back to Nemotron.",
+                    help="Choose a configured free/free-tier model for strategy generation.",
                 )
                 judge_index = 1 if len(labels) > 1 else 0
                 judge_label = st.sidebar.selectbox("Independent judge model", labels, index=judge_index)
@@ -571,7 +571,10 @@ def render_sidebar() -> dict:
                     f"**{len(labels)} available choices:** "
                     + " · ".join(label.split(": ", 1)[-1] for label in labels)
                 )
-                st.sidebar.caption("Unavailable trial models fall back to Nemotron after 4 seconds.")
+                st.sidebar.caption(
+                    "Groq models are independently selectable for report comparisons; "
+                    "cross-provider failover remains enabled."
+                )
                 if len(distinct_providers) < 2:
                     st.sidebar.warning(
                         "Only one inference provider is configured. Add a free Groq, OpenRouter, "
@@ -938,8 +941,8 @@ def main():
                 and gen_usage.model != model_selection["strategy_model"].split("::")[-1]
             ):
                 st.warning(
-                    "The selected strategy model timed out on NVIDIA's hosted service. "
-                    f"The strategy was completed using the configured fallback model: `{gen_usage.model}`."
+                    "The selected strategy model was unavailable. "
+                    f"The strategy was completed using the fallback model: `{gen_usage.model}`."
                 )
             titled = output_formatter.add_title(
                 strategy_md, persona["label"], answers.get("org_name", "")
