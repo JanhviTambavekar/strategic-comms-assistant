@@ -46,13 +46,13 @@ def available_free_models() -> dict[str, str]:
     models = {}
     if os.getenv("GROQ_API_KEY"):
         model = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
-        models[f"Groq · {model}"] = f"groq::{model}"
+        models[f"Groq: {model}"] = f"groq::{model}"
     if os.getenv("OPENROUTER_API_KEY"):
         model = os.getenv("OPENROUTER_MODEL", "openrouter/free")
-        models[f"OpenRouter · {model}"] = f"openrouter::{model}"
+        models[f"OpenRouter: {model}"] = f"openrouter::{model}"
     if os.getenv("GOOGLE_API_KEY"):
         model = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash-lite")
-        models[f"Gemini · {model}"] = f"gemini::{model}"
+        models[f"Gemini: {model}"] = f"gemini::{model}"
     if os.getenv("OPENAI_API_KEY") and "nvidia" in (os.getenv("OPENAI_BASE_URL") or "").lower():
         fallback = os.getenv("NVIDIA_FALLBACK_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b")
         ordered = [fallback, *NVIDIA_MODELS.values()]
@@ -61,7 +61,7 @@ def available_free_models() -> dict[str, str]:
             key_name = NVIDIA_MODEL_KEY.get(model)
             if model == fallback or (key_name and os.getenv(key_name)):
                 label = labels_by_model.get(model, model)
-                models[f"NVIDIA · {label}"] = f"openai::{model}"
+                models[f"NVIDIA: {label}"] = f"openai::{model}"
     return models
 
 

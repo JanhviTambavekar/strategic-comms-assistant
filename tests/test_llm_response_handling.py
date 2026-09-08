@@ -14,7 +14,7 @@ class NvidiaResponseHandlingTests(unittest.TestCase):
         }
         with patch.dict("os.environ", values, clear=True):
             self.assertEqual(available_free_models(), {
-                "Groq · fast-model": "groq::fast-model"
+                "Groq: fast-model": "groq::fast-model"
             })
 
     def test_nvidia_pool_lists_fallback_and_models_with_specific_keys(self):

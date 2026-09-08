@@ -555,7 +555,11 @@ def render_sidebar() -> dict:
             free_models = llm_client.available_free_models()
             if free_models:
                 labels = list(free_models)
-                strategy_label = st.sidebar.selectbox("Fast strategy model", labels, index=0)
+                st.sidebar.caption(f"Choose from {len(labels)} configured models:")
+                strategy_label = st.sidebar.radio(
+                    "Strategy model", labels, index=0,
+                    help="All configured models are shown. Nemotron is currently the reliable default.",
+                )
                 strategy_provider = free_models[labels[0]].split("::", 1)[0]
                 judge_index = next(
                     (index for index, label in enumerate(labels[1:], 1)
