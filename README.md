@@ -1,113 +1,138 @@
-# AI-Driven Strategic Communications Assistant (MVP)
+# AI-Driven Strategic Communications Assistant
 
-MSc Project 06 — *Design and Development of an AI-Driven Strategic Communications
-Assistant for Researchers, Start-Ups and Science-led Innovators* (client: Scientia Scripta).
+An MSc software project that generates tailored communication and engagement strategies for researchers, start-ups, and science-led organisations.
 
-This is a minimal, demoable prototype of the system described in the project
-proposal. A client selects a **persona**, answers a **questionnaire**,
-optionally **uploads a brief**, and the system routes their inputs through a
-**knowledge tree** to build a **prompt**, calls an **LLM**, and returns a
-**tailored communication & engagement strategy** plus an **evaluation score**.
+[![Live application](https://img.shields.io/badge/Live_application-Render-46E3B7?style=for-the-badge)](https://strategic-comms-assistant.onrender.com)
+[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/UI-Streamlit-ff4b4b)](https://streamlit.io/)
 
-[![Open Live App](https://img.shields.io/badge/Open_Live_App-Render-46E3B7?style=for-the-badge)](https://strategic-comms-assistant.onrender.com)
+## Overview
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/JanhviTambavekar/strategic-comms-assistant)
+The application collects a client persona, questionnaire responses, and an optional brief. It routes this evidence through a knowledge tree, constructs a standardised prompt, generates a ten-section strategy, and evaluates the result against the project rubric.
 
-## What it demonstrates (maps to the proposal)
+The deployed comparison panel uses four verified Groq free-tier models and one Gemini free-tier model. NVIDIA trial endpoints were removed from the active pool after repeated hosted-service timeouts.
 
-| Proposal concept | Where it lives |
-|---|---|
-| 3 client personas (research / spin-out / SME) | `config/personas.json` |
-| Structured questionnaire + document upload | `app.py`, `src/document_extractor.py` |
-| Persona classifier | `src/persona_classifier.py` |
-| Knowledge-tree routing mechanism | `src/knowledge_tree.py` |
-| Standardised prompt library | `prompts/` |
-| Google Gemini support (primary) + multi-LLM (Claude / OpenAI) | `src/llm_client.py` |
-| Strategy report (10-section v4 structure) | `prompts/full_strategy.txt` |
-| Evaluation rubric v2.0 (10 criteria + MUST-PASS gates + verdict) | `src/evaluator.py`, `docs/evaluation_rubric.md` |
-| Worked ground-truth examples (3 personas) | `ground_truth/` |
-| Standardised AISCE prompt template (v4) | `prompts/full_strategy.txt`, `docs/AISCE_prompt_template.md` |
-| Human evaluation method (pre-rubric) | `docs/human_evaluation_method.md` |
-| Specialist-LLM feasibility note | `docs/specialist_llms.md` |
-| Token & cost analysis (model, tokens, cost per strategy) | `src/cost.py`, `docs/cost_model.md`, 💰 tab in `app.py` |
+## Current model panel
 
-### Architecture (from `diagram.png`)
+| Provider | Model | Intended comparison role |
+|---|---|---|
+| Groq | Qwen 3.8 27B | Default writer and instruction following |
+| Groq | Qwen 3.6 27B | Long-form drafting comparator |
+| Groq | GPT-OSS 20B | Fast structured-output comparator |
+| Groq | GPT-OSS 120B | Higher-capacity reasoning comparator |
+| Google | Gemini 3.5 Flash Lite | Cross-provider fallback/comparator |
+
+Model availability and free-tier limits are controlled by providers and may change. No API keys are stored in this repository.
+
+## Features
+
+- Three client personas: researcher, university spin-out, and innovative SME
+- Persona-specific questionnaires and optional document upload
+- Knowledge-tree routing and transparent prompt construction
+- Ten-section strategic communications report
+- Quick mode with one model request and deterministic local evaluation
+- Detailed mode with an independently selectable LLM judge
+- Bounded cross-provider failover and labelled offline demonstration fallback
+- Token, model, latency, and estimated-cost recording
+- Evaluation rubric with ten criteria and mandatory quality gates
+
+## Architecture
+
+```text
+Streamlit UI -> input and document extraction -> persona classification
+             -> knowledge-tree routing -> prompt construction
+             -> free-model pool -> strategy formatting and evaluation
 ```
-UI → Input Collector → [Persona Classifier + Document Extractor]
-   → Knowledge Tree → Prompt Builder → LLM → Output Formatter
-   → [Strategy Report + Evaluation Dashboard]
-```
 
-## Quick start
+## Local setup
 
-```bash
-# 1. (optional but recommended) create a virtual environment
+Python 3.11 or later is recommended.
+
+```powershell
+git clone https://github.com/JanhviTambavekar/strategic-comms-assistant.git
+cd strategic-comms-assistant
 python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # macOS/Linux
-
-# 2. install dependencies
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+Copy-Item .env.example .env
+```
 
-# 3. configure (optional — runs in MOCK mode without this)
-copy .env.example .env        # Windows  (cp on macOS/Linux)
-#  then edit .env and set LLM_PROVIDER + your API key
+For live generation, edit `.env`:
 
-# 4. run
+```dotenv
+LLM_PROVIDER=free
+GROQ_API_KEY=your_key_here
+GROQ_MODEL=qwen/qwen3.8-27b
+GROQ_REQUEST_TIMEOUT=30
+```
+
+Run the application:
+
+```powershell
 streamlit run app.py
 ```
 
-The app opens in your browser at http://localhost:8501.
+Open http://localhost:8501. With no API key, use `LLM_PROVIDER=mock` for the offline workflow.
 
-## Mock mode (no API key needed)
+## Model comparison workflow
 
-If you don't set an API key, the app runs in **mock mode** and returns a
-realistic canned strategy + scores. This means **the demo always works** — useful
-for showing the flow to your professor offline. To produce genuinely tailored,
-client-specific strategies, add an API key to `.env`:
+For a fair report comparison:
 
-- **Free-model pool (recommended):** set `LLM_PROVIDER=free`. The comparison panel exposes four verified Groq models (Qwen 3.8, Qwen 3.6, GPT-OSS 20B, and GPT-OSS 120B), plus configured Gemini, OpenRouter, or Cloudflare models. Generation and evaluation can use different models and automatically fail over across providers. NVIDIA trial endpoints are excluded because repeated timeouts made interactive runs unreliable.
-- **Google Gemini:** set `LLM_PROVIDER=gemini` and `GOOGLE_API_KEY=...` (from https://aistudio.google.com/apikey)
-- **Anthropic:** set `LLM_PROVIDER=anthropic` and `ANTHROPIC_API_KEY=...`
-- **OpenAI:** set `LLM_PROVIDER=openai` and `OPENAI_API_KEY=...`
+1. Keep the persona, questionnaire responses, evidence, prompt, mode, and token budget fixed.
+2. Select a different strategy model for each run.
+3. Keep the judge and evaluation settings constant.
+4. Record output, score, latency, tokens, fallback status, and provider errors.
+5. Repeat each condition because free endpoints vary in load and output.
 
-## Demo script (≈2 minutes)
+See [`docs/model_comparison.md`](docs/model_comparison.md) for the protocol, measurements, limitations, and results template.
 
-1. Pick the **SME Innovator** persona.
-2. Upload `data/sample_uploads/sme_brief.txt` (GreenCrate).
-3. Fill a couple of questionnaire fields (or leave them — the upload provides context).
-4. Click **Generate strategy**.
-5. Show the three tabs: **Strategy Report**, **Evaluation Dashboard**, and the
-   **Prompt** tab (transparency — shows exactly what the knowledge tree built).
-6. Point out the **routing caption** ("Persona X + objective Y → template Z") to
-   show the knowledge tree in action.
+## Testing
 
-## Project layout
-
+```powershell
+python -m unittest discover -s tests -q
 ```
+
+## Project structure
+
+```text
 strategic-comms-assistant/
-├── app.py                  # Streamlit UI + pipeline wiring
-├── config/personas.json    # 3 personas + 31-question questionnaires (the persona system)
-├── prompts/                # standardised prompt library (full_strategy.txt = AISCE v4)
-├── data/sample_uploads/    # synthetic demo briefs (one per persona)
-├── ground_truth/           # Task 4: worked input→prompt→output examples + usefulness eval
-├── docs/                   # Tasks 5-8: template spec, human eval method, rubric, specialist-LLM note, live-API setup
-└── src/                    # pipeline modules (one per architecture box)
+|-- app.py                    Streamlit UI and pipeline orchestration
+|-- config/                   Persona and questionnaire configuration
+|-- data/sample_uploads/      Synthetic demonstration briefs
+|-- docs/                     Design, evaluation, and research documentation
+|-- ground_truth/             Worked examples and reference outputs
+|-- prompts/                  Standardised prompt templates
+|-- src/                      Routing, LLM, extraction, formatting, evaluation
+|-- tests/                    Automated unit tests
+|-- render.yaml               Render deployment blueprint
+`-- PROJECT_UPDATES.md        Chronological implementation record
 ```
 
-## Project artefacts (Tasks 4–8)
+## Reproducibility and security
 
-| Task | Deliverable | Location |
-|---|---|---|
-| 4 · Test full prompt→output workflow | 3 ground-truth strategies + pre-rubric usefulness eval | `ground_truth/` |
-| 5 · Standardised template prompt | AISCE v4 template + spec | `prompts/full_strategy.txt`, `docs/AISCE_prompt_template.md` |
-| 6 · Human evaluation method | Draft criteria framework (Clear/Relevant/Actionable/Resource-appropriate) | `docs/human_evaluation_method.md` |
-| 7 · Evaluation rubric | Formal rubric v2.0 (10 criteria, gates, verdict) wired into the judge | `docs/evaluation_rubric.md`, `src/evaluator.py` |
-| 8 · Specialist LLMs | Feasibility note + shortlist | `docs/specialist_llms.md` |
-| — · Live API | Google Gemini setup | `docs/live_api_setup.md`, `.env` |
+- Local secrets belong in `.env`, which is ignored by Git.
+- Render secrets are environment variables marked `sync: false` in the blueprint.
+- Quick mode uses local evaluation to reduce latency and avoid a second request.
+- Offline fallback results are labelled and must not be counted as live-model results.
+- `main` deploys automatically to Render; free instances may cold-start after inactivity.
 
-## Stretch goal (not in MVP)
+Live application: https://strategic-comms-assistant.onrender.com
 
-The second diagram (`diagram (1).png`) shows an **agentic interview loop**
-(gap-analysis → "enough information?" → interview agent). This MVP implements the
-linear path; the interview loop is the natural next iteration.
+## Academic artefacts
+
+| Artefact | Location |
+|---|---|
+| AISCE prompt template | `prompts/full_strategy.txt`, `docs/AISCE_prompt_template.md` |
+| Evaluation rubric | `docs/evaluation_rubric.md`, `src/evaluator.py` |
+| Model-comparison protocol | `docs/model_comparison.md` |
+| Human evaluation method | `docs/human_evaluation_method.md` |
+| Ground-truth examples | `ground_truth/` |
+| Cost and token model | `docs/cost_model.md`, `src/cost.py` |
+| Development history | `PROJECT_UPDATES.md` |
+
+## Limitations
+
+- Free-tier quotas, model identifiers, and availability may change.
+- Outputs require human review before operational use.
+- Automated scores are comparative indicators, not proof of effectiveness.
+- Offline fallback output is for demonstrations, not model benchmarking.

@@ -289,6 +289,8 @@ When NVIDIA NIM configured:
 
 ## LLM Configuration & Research
 
+> **Current configuration:** the active comparison panel uses four verified Groq models, with Gemini as the deployed fifth model and cross-provider fallback. NVIDIA entries below are historical development notes and are no longer exposed by the application.
+
 ### Fast Free-Model Pool (September 2026)
 
 - Added `LLM_PROVIDER=free` to expose all configured free/free-tier services in one sidebar.
