@@ -40,13 +40,23 @@ NVIDIA_MODEL_KEY = {
     "google/gemma-4-31b-it": "NVIDIA_GEMMA_API_KEY",
 }
 
+GROQ_MODELS = {
+    "GPT-OSS 20B - Fast rubric evaluation": "openai/gpt-oss-20b",
+    "GPT-OSS 120B - Higher-quality reasoning": "openai/gpt-oss-120b",
+    "Qwen 3.6 27B - Long-form drafting": "qwen/qwen3.6-27b",
+    "Qwen 3.8 27B - Instruction following": "qwen/qwen3.8-27b",
+}
+
 
 def available_free_models() -> dict[str, str]:
     """Return configured no-cost/free-tier targets for the model selectors."""
     models = {}
     if os.getenv("GROQ_API_KEY"):
-        model = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
-        models[f"Groq: {model}"] = f"groq::{model}"
+        configured = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+        ordered = [configured, *GROQ_MODELS.values()]
+        labels_by_model = {model: label for label, model in GROQ_MODELS.items()}
+        for model in dict.fromkeys(ordered):
+            models[f"Groq: {labels_by_model.get(model, model)}"] = f"groq::{model}"
     if os.getenv("OPENROUTER_API_KEY"):
         model = os.getenv("OPENROUTER_MODEL", "openrouter/free")
         models[f"OpenRouter: {model}"] = f"openrouter::{model}"
@@ -330,7 +340,8 @@ def _openai_compatible(prompt: str, max_tokens: int, *, api_key: str, base_url: 
                        model: str, provider: str):
     """Call a small OpenAI-compatible endpoint with a bounded timeout."""
     from openai import OpenAI
-    client = OpenAI(api_key=api_key, base_url=base_url, timeout=float(os.getenv("FREE_MODEL_TIMEOUT", "12")), max_retries=0)
+    timeout = float(os.getenv("GROQ_REQUEST_TIMEOUT", "30")) if provider == "groq" else float(os.getenv("FREE_MODEL_TIMEOUT", "12"))
+    client = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout, max_retries=0)
     resp = client.chat.completions.create(
         model=model, max_tokens=max_tokens, temperature=0.2,
         messages=[{"role": "user", "content": prompt}],
@@ -350,7 +361,7 @@ def _groq(prompt: str, max_tokens: int, selected_model: str | None = None):
     return _openai_compatible(
         prompt, max_tokens, api_key=os.getenv("GROQ_API_KEY", ""),
         base_url="https://api.groq.com/openai/v1",
-        model=selected_model or os.getenv("GROQ_MODEL", "openai/gpt-oss-20b"), provider="groq",
+        model=selected_model or os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b"), provider="groq",
     )
 
 

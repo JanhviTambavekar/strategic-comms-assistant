@@ -554,12 +554,7 @@ def render_sidebar() -> dict:
                     "Strategy model", labels, index=0,
                     help="Choose a free/free-tier model. Unavailable NVIDIA trial models fall back to Nemotron.",
                 )
-                strategy_provider = free_models[labels[0]].split("::", 1)[0]
-                judge_index = next(
-                    (index for index, label in enumerate(labels[1:], 1)
-                     if free_models[label].split("::", 1)[0] != strategy_provider),
-                    0,
-                )
+                judge_index = 1 if len(labels) > 1 else 0
                 judge_label = st.sidebar.selectbox("Independent judge model", labels, index=judge_index)
                 speed = st.sidebar.radio(
                     "Output mode", ["Quick", "Detailed"], horizontal=True,

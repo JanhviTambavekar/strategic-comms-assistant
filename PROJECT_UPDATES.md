@@ -303,6 +303,7 @@ When NVIDIA NIM configured:
 - Deployment fix: a general NVIDIA key now exposes the full six-model research panel even when model-specific override keys are not present. The sidebar uses a compact selector plus a visible catalogue summary, removing the empty expander and oversized radio layout.
 - Re-researched the panel against NVIDIA's official live catalog and authenticated `/v1/models` response. Retired/speculative Kimi and DeepSeek entries were replaced by role-appropriate current free endpoints: Nemotron Lightning, Nemotron Nano Omni, GPT-OSS 20B, Muse Glimmer, Gemma 4, and DiffusionGemma. See `docs/nvidia_free_model_panel.md` for roles and verified availability caveats.
 - Added Cloudflare Workers AI to the existing Groq, OpenRouter, Gemini, and NVIDIA free-provider pool. The sidebar now warns when only one provider is configured, because multiple model names on one NVIDIA service do not provide genuine outage resilience.
+- Created a 90-day Groq project key through the user-authorized browser session and stored it only in the ignored local `.env`. The authenticated Groq model catalog exposed four suitable free-plan models; GPT-OSS 20B/120B and Qwen 3.6/3.8 27B were each live-tested successfully and added to the selector ahead of NVIDIA.
 
 ### Recommended Production Multi-Model Panel
 

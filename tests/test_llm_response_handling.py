@@ -13,9 +13,9 @@ class NvidiaResponseHandlingTests(unittest.TestCase):
             "OPENROUTER_API_KEY": "",
         }
         with patch.dict("os.environ", values, clear=True):
-            self.assertEqual(available_free_models(), {
-                "Groq: fast-model": "groq::fast-model"
-            })
+            models = available_free_models()
+            self.assertEqual(len(models), 5)
+            self.assertEqual(next(iter(models.values())), "groq::fast-model")
 
     def test_cloudflare_free_model_requires_token_and_account(self):
         values = {
