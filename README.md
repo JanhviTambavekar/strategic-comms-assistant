@@ -66,7 +66,7 @@ realistic canned strategy + scores. This means **the demo always works** — use
 for showing the flow to your professor offline. To produce genuinely tailored,
 client-specific strategies, add an API key to `.env`:
 
-- **Free-model pool (recommended):** set `LLM_PROVIDER=free` and configure two or more of `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `GOOGLE_API_KEY`, or NVIDIA credentials. The sidebar lets generation and evaluation use different models and automatically fails over when a free endpoint is unavailable.
+- **Free-model pool (recommended):** set `LLM_PROVIDER=free` and configure two or more distinct providers: Groq, OpenRouter, Gemini, Cloudflare Workers AI, or NVIDIA. The sidebar lets generation and evaluation use different models and automatically fails over when a free endpoint is unavailable. Multiple NVIDIA model names still count as one provider and do not protect against a NVIDIA-wide outage.
 - **Google Gemini:** set `LLM_PROVIDER=gemini` and `GOOGLE_API_KEY=...` (from https://aistudio.google.com/apikey)
 - **Anthropic:** set `LLM_PROVIDER=anthropic` and `ANTHROPIC_API_KEY=...`
 - **OpenAI:** set `LLM_PROVIDER=openai` and `OPENAI_API_KEY=...`

@@ -497,6 +497,7 @@ def render_sidebar() -> dict:
         "free": "Free model pool",
         "groq": "Groq free tier",
         "openrouter": "OpenRouter free",
+        "cloudflare": "Cloudflare Workers AI",
         "gemini": "Google Gemini",
         "anthropic": "Anthropic",
         "openai": "OpenAI",
@@ -548,6 +549,7 @@ def render_sidebar() -> dict:
         free_models = llm_client.available_free_models()
         if free_models:
                 labels = list(free_models)
+                distinct_providers = {target.split("::", 1)[0] for target in free_models.values()}
                 strategy_label = st.sidebar.selectbox(
                     "Strategy model", labels, index=0,
                     help="Choose a free/free-tier model. Unavailable NVIDIA trial models fall back to Nemotron.",
@@ -575,6 +577,11 @@ def render_sidebar() -> dict:
                     + " · ".join(label.split(": ", 1)[-1] for label in labels)
                 )
                 st.sidebar.caption("Unavailable trial models fall back to Nemotron after 4 seconds.")
+                if len(distinct_providers) < 2:
+                    st.sidebar.warning(
+                        "Only one inference provider is configured. Add a free Groq, OpenRouter, "
+                        "Gemini, or Cloudflare key to enable real cross-provider failover."
+                    )
         else:
                 st.sidebar.warning("Add a supported free-tier API key to `.env`.")
     # Model configuration for supported providers. Keep this visible in mock
@@ -932,6 +939,7 @@ def main():
                 )
             if (
                 model_selection["strategy_model"]
+                and gen_usage.provider != "mock"
                 and gen_usage.model != model_selection["strategy_model"].split("::")[-1]
             ):
                 st.warning(

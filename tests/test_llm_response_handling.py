@@ -17,6 +17,18 @@ class NvidiaResponseHandlingTests(unittest.TestCase):
                 "Groq: fast-model": "groq::fast-model"
             })
 
+    def test_cloudflare_free_model_requires_token_and_account(self):
+        values = {
+            "CLOUDFLARE_API_TOKEN": "token",
+            "CLOUDFLARE_ACCOUNT_ID": "account",
+            "CLOUDFLARE_MODEL": "@cf/google/gemma-3-12b-it",
+        }
+        with patch.dict("os.environ", values, clear=True):
+            self.assertEqual(available_free_models(), {
+                "Cloudflare: @cf/google/gemma-3-12b-it":
+                    "cloudflare::@cf/google/gemma-3-12b-it"
+            })
+
     def test_general_nvidia_key_exposes_full_research_panel(self):
         values = {
             "OPENAI_API_KEY": "key",

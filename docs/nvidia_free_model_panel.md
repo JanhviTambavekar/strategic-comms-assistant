@@ -13,6 +13,8 @@ Verified against NVIDIA's official API Catalog and API reference on 8 September 
 
 The NVIDIA `/v1/models` response is a catalogue, not a guarantee that one API key can invoke every model. Trial access may be model-scoped and shared endpoints may return 403, 404, 429, an empty response, or a timeout. The application records the model that actually completed the request and falls back to verified Nemotron after a short experimental-model window.
 
+For operational reliability, NVIDIA should be combined with at least one distinct free-tier provider. The application also supports Gemini, Groq, OpenRouter's free router, and Cloudflare Workers AI; these require separate credentials in deployment secrets.
+
 Official references:
 
 - https://build.nvidia.com/models?label=Text-to-Text

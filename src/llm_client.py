@@ -53,6 +53,9 @@ def available_free_models() -> dict[str, str]:
     if os.getenv("GOOGLE_API_KEY"):
         model = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash-lite")
         models[f"Gemini: {model}"] = f"gemini::{model}"
+    if os.getenv("CLOUDFLARE_API_TOKEN") and os.getenv("CLOUDFLARE_ACCOUNT_ID"):
+        model = os.getenv("CLOUDFLARE_MODEL", "@cf/google/gemma-3-12b-it")
+        models[f"Cloudflare: {model}"] = f"cloudflare::{model}"
     if os.getenv("OPENAI_API_KEY") and "nvidia" in (os.getenv("OPENAI_BASE_URL") or "").lower():
         fallback = os.getenv("NVIDIA_FALLBACK_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b")
         ordered = [fallback, *NVIDIA_MODELS.values()]
@@ -121,10 +124,10 @@ def get_provider() -> str:
     auto-detect from whichever key is available.
     """
     explicit = (os.getenv("LLM_PROVIDER") or "").strip().lower()
-    if explicit in {"free", "groq", "openrouter", "gemini", "anthropic", "openai", "mock"}:
+    if explicit in {"free", "groq", "openrouter", "cloudflare", "gemini", "anthropic", "openai", "mock"}:
         return explicit
     # No explicit provider -> auto-detect from available keys, else mock.
-    if os.getenv("GROQ_API_KEY") or os.getenv("OPENROUTER_API_KEY"):
+    if os.getenv("GROQ_API_KEY") or os.getenv("OPENROUTER_API_KEY") or os.getenv("CLOUDFLARE_API_TOKEN"):
         return "free"
     if os.getenv("GOOGLE_API_KEY"):
         return "gemini"
@@ -152,6 +155,8 @@ def generate_with_usage(prompt: str, max_tokens: int = 2000, model: str | None =
         return _with_retries(_groq, prompt, max_tokens, provider="Groq", model=model)
     if provider == "openrouter":
         return _with_retries(_openrouter, prompt, max_tokens, provider="OpenRouter", model=model)
+    if provider == "cloudflare":
+        return _with_retries(_cloudflare, prompt, max_tokens, provider="Cloudflare", model=model)
     if provider == "gemini":
         return _with_retries(_gemini, prompt, max_tokens, provider="Gemini", model=model)
     if provider == "anthropic":
@@ -176,7 +181,10 @@ def _free_generate(prompt: str, max_tokens: int, preferred_provider: str | None,
             seen_providers.add(provider)
 
     errors = []
-    handlers = {"groq": _groq, "openrouter": _openrouter, "gemini": _gemini, "openai": _openai}
+    handlers = {
+        "groq": _groq, "openrouter": _openrouter, "cloudflare": _cloudflare,
+        "gemini": _gemini, "openai": _openai,
+    }
     for provider, candidate_model in candidates:
         handler = handlers.get(provider)
         if not handler:
@@ -186,7 +194,7 @@ def _free_generate(prompt: str, max_tokens: int, preferred_provider: str | None,
         except Exception as exc:  # one attempt per free endpoint keeps latency bounded
             errors.append(f"{provider}: {_status_code(exc) or type(exc).__name__}")
     if not candidates:
-        raise LLMError("No free-model API key is configured. Add GROQ_API_KEY, OPENROUTER_API_KEY, GOOGLE_API_KEY, or an NVIDIA key.")
+        raise LLMError("No free-model API key is configured. Add a Groq, OpenRouter, Gemini, Cloudflare, or NVIDIA credential.")
     raise LLMError("All configured free models were unavailable (" + ", ".join(errors) + ").")
 
 
@@ -351,6 +359,16 @@ def _openrouter(prompt: str, max_tokens: int, selected_model: str | None = None)
         prompt, max_tokens, api_key=os.getenv("OPENROUTER_API_KEY", ""),
         base_url="https://openrouter.ai/api/v1",
         model=selected_model or os.getenv("OPENROUTER_MODEL", "openrouter/free"), provider="openrouter",
+    )
+
+
+def _cloudflare(prompt: str, max_tokens: int, selected_model: str | None = None):
+    account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID", "").strip()
+    return _openai_compatible(
+        prompt, max_tokens, api_key=os.getenv("CLOUDFLARE_API_TOKEN", ""),
+        base_url=f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1",
+        model=selected_model or os.getenv("CLOUDFLARE_MODEL", "@cf/google/gemma-3-12b-it"),
+        provider="cloudflare",
     )
 
 
