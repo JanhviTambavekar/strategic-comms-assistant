@@ -297,6 +297,7 @@ When NVIDIA NIM configured:
 - Each distinct free service receives one bounded attempt (`FREE_MODEL_TIMEOUT=12` by default), followed by automatic cross-provider failover. NVIDIA uses one configured fallback rather than walking its full model catalogue.
 - Credentials remain local in `.env`; only blank configuration examples are tracked by Git.
 - Quick mode now performs one 700-token generation call and runs evaluation locally, removing the second sequential LLM request. Detailed mode retains the full independent LLM judge for research-quality comparisons.
+- If every shared free endpoint is rate-limited, unauthorized, or timed out, Quick mode now returns the structured offline strategy instead of terminating the workflow. The UI clearly labels this fallback.
 
 ### Recommended Production Multi-Model Panel
 

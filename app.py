@@ -912,11 +912,24 @@ def main():
         with st.spinner("Routing through the knowledge tree and generating your strategy…"):
             # The v4 strategy requires a full 10-section plan with a 36-month
             # timeline, personas, and KPIs — needs a larger output budget.
-            strategy_md, gen_usage = llm_client.generate_with_usage(
-                prompt,
-                max_tokens=model_selection["strategy_max_tokens"],
-                model=model_selection["strategy_model"],
-            )
+            try:
+                strategy_md, gen_usage = llm_client.generate_with_usage(
+                    prompt,
+                    max_tokens=model_selection["strategy_max_tokens"],
+                    model=model_selection["strategy_model"],
+                )
+            except llm_client.LLMError as exc:
+                if model_selection.get("use_llm_judge", True):
+                    raise
+                # Free shared endpoints can be unavailable even with valid
+                # credentials. Quick mode must remain demoable and therefore
+                # falls back to the local structured strategy immediately.
+                strategy_md, gen_usage = llm_client._mock(prompt)
+                st.warning(
+                    "The free model is currently busy or unavailable. "
+                    "Quick mode returned the offline strategy instead. "
+                    f"Provider detail: {exc}"
+                )
             if (
                 model_selection["strategy_model"]
                 and gen_usage.model != model_selection["strategy_model"].split("::")[-1]
