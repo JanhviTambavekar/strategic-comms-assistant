@@ -17,6 +17,18 @@ class NvidiaResponseHandlingTests(unittest.TestCase):
                 "Groq · fast-model": "groq::fast-model"
             })
 
+    def test_nvidia_pool_only_lists_configured_primary_and_fallback(self):
+        values = {
+            "OPENAI_API_KEY": "key",
+            "OPENAI_BASE_URL": "https://integrate.api.nvidia.com/v1",
+            "OPENAI_MODEL": "vendor/primary",
+            "NVIDIA_FALLBACK_MODEL": "vendor/fallback",
+        }
+        with patch.dict("os.environ", values, clear=True):
+            self.assertEqual(list(available_free_models().values()), [
+                "openai::vendor/fallback", "openai::vendor/primary"
+            ])
+
     def test_nvidia_keys_support_three_numbered_keys_and_bearer_prefix(self):
         values = {
             "NVIDIA_API_KEY_1": "first",

@@ -555,15 +555,24 @@ def render_sidebar() -> dict:
             if free_models:
                 labels = list(free_models)
                 strategy_label = st.sidebar.selectbox("Fast strategy model", labels, index=0)
-                judge_index = 1 if len(labels) > 1 else 0
+                strategy_provider = free_models[labels[0]].split("::", 1)[0]
+                judge_index = next(
+                    (index for index, label in enumerate(labels[1:], 1)
+                     if free_models[label].split("::", 1)[0] != strategy_provider),
+                    0,
+                )
                 judge_label = st.sidebar.selectbox("Independent judge model", labels, index=judge_index)
+                speed = st.sidebar.radio(
+                    "Output mode", ["Quick", "Detailed"], horizontal=True,
+                    help="Quick is best for shared free endpoints. Detailed may take substantially longer.",
+                )
                 model_selection = {
                     "strategy_model": free_models[strategy_label],
                     "judge_model": free_models[judge_label],
-                    "strategy_max_tokens": 1800,
-                    "judge_max_tokens": 250,
+                    "strategy_max_tokens": 1000 if speed == "Quick" else 2400,
+                    "judge_max_tokens": 180 if speed == "Quick" else 400,
                 }
-                st.sidebar.caption("Each request fails over once across configured free services; timeout is bounded by FREE_MODEL_TIMEOUT.")
+                st.sidebar.caption("Fast fallback is enabled across distinct configured services.")
             else:
                 st.sidebar.warning("Add a supported free-tier API key to `.env`.")
     # Model configuration for supported providers. Keep this visible in mock

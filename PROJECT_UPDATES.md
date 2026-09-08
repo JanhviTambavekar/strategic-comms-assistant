@@ -294,7 +294,7 @@ When NVIDIA NIM configured:
 - Added `LLM_PROVIDER=free` to expose all configured free/free-tier services in one sidebar.
 - Added native OpenAI-compatible clients for Groq and OpenRouter alongside Gemini and NVIDIA NIM.
 - Strategy generation and independent evaluation can use different providers/models.
-- Each free endpoint receives one bounded attempt (`FREE_MODEL_TIMEOUT=25` by default), followed by automatic cross-provider failover. This prevents a rate-limited free model from blocking the full workflow for several retry cycles.
+- Each distinct free service receives one bounded attempt (`FREE_MODEL_TIMEOUT=12` by default), followed by automatic cross-provider failover. NVIDIA uses one configured fallback rather than walking its full model catalogue.
 - Credentials remain local in `.env`; only blank configuration examples are tracked by Git.
 
 ### Recommended Production Multi-Model Panel

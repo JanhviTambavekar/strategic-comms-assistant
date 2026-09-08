@@ -45,7 +45,15 @@ def available_free_models() -> dict[str, str]:
         model = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash-lite")
         models[f"Gemini · {model}"] = f"gemini::{model}"
     if os.getenv("OPENAI_API_KEY") and "nvidia" in (os.getenv("OPENAI_BASE_URL") or "").lower():
-        for label, model in NVIDIA_MODELS.items():
+        # Expose only configured NVIDIA targets. Listing the whole catalogue
+        # caused a single request to walk several slow/retired endpoints.
+        configured = [
+            os.getenv("NVIDIA_FALLBACK_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b"),
+            os.getenv("OPENAI_MODEL", ""),
+        ]
+        labels_by_model = {model: label for label, model in NVIDIA_MODELS.items()}
+        for model in dict.fromkeys(item.strip() for item in configured if item.strip()):
+            label = labels_by_model.get(model, model)
             models[f"NVIDIA · {label}"] = f"openai::{model}"
     return models
 
@@ -161,10 +169,14 @@ def _free_generate(prompt: str, max_tokens: int, preferred_provider: str | None,
     candidates = []
     if preferred_provider:
         candidates.append((preferred_provider, model))
+    seen_providers = {preferred_provider} if preferred_provider else set()
     for target in available_free_models().values():
         provider, candidate_model = target.split("::", 1)
-        if (provider, candidate_model) not in candidates:
+        # Fail over across services, not across a long catalogue on the same
+        # hosted service. NVIDIA performs its own single model fallback.
+        if provider not in seen_providers:
             candidates.append((provider, candidate_model))
+            seen_providers.add(provider)
 
     errors = []
     handlers = {"groq": _groq, "openrouter": _openrouter, "gemini": _gemini, "openai": _openai}
@@ -313,7 +325,7 @@ def _openai_compatible(prompt: str, max_tokens: int, *, api_key: str, base_url: 
                        model: str, provider: str):
     """Call a small OpenAI-compatible endpoint with a bounded timeout."""
     from openai import OpenAI
-    client = OpenAI(api_key=api_key, base_url=base_url, timeout=float(os.getenv("FREE_MODEL_TIMEOUT", "25")), max_retries=0)
+    client = OpenAI(api_key=api_key, base_url=base_url, timeout=float(os.getenv("FREE_MODEL_TIMEOUT", "12")), max_retries=0)
     resp = client.chat.completions.create(
         model=model, max_tokens=max_tokens, temperature=0.2,
         messages=[{"role": "user", "content": prompt}],
@@ -406,7 +418,9 @@ def _nvidia(prompt: str, max_tokens: int, base_url: str, model: str):
             )
         except requests.Timeout as exc:
             last_timeout = exc
-            continue
+            # A timeout is a model/endpoint availability problem, not a bad
+            # credential. Trying every key repeats the same wait needlessly.
+            break
         if response.status_code not in {401, 403, 429}:
             break
 
@@ -432,7 +446,7 @@ def _nvidia(prompt: str, max_tokens: int, base_url: str, model: str):
     # A previously saved sidebar choice may point at an NVIDIA endpoint that
     # has since been retired. Continue with the current default once instead
     # of failing an otherwise valid strategy request.
-    if response.status_code == 410:
+    if response.status_code in {401, 403, 404, 410, 429}:
         fallback_model = os.getenv(
             "NVIDIA_FALLBACK_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b"
         ).strip()
