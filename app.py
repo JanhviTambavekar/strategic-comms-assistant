@@ -547,6 +547,7 @@ def render_sidebar() -> dict:
         "judge_model": None,
         "strategy_max_tokens": 1800,
         "judge_max_tokens": 250,
+        "use_llm_judge": True,
     }
     if provider in {"free", "groq", "openrouter"}:
         st.sidebar.markdown("---")
@@ -569,8 +570,9 @@ def render_sidebar() -> dict:
                 model_selection = {
                     "strategy_model": free_models[strategy_label],
                     "judge_model": free_models[judge_label],
-                    "strategy_max_tokens": 1000 if speed == "Quick" else 2400,
+                    "strategy_max_tokens": 700 if speed == "Quick" else 2400,
                     "judge_max_tokens": 180 if speed == "Quick" else 400,
+                    "use_llm_judge": speed != "Quick",
                 }
                 st.sidebar.caption("Fast fallback is enabled across distinct configured services.")
             else:
@@ -917,7 +919,7 @@ def main():
             )
             if (
                 model_selection["strategy_model"]
-                and gen_usage.model != model_selection["strategy_model"]
+                and gen_usage.model != model_selection["strategy_model"].split("::")[-1]
             ):
                 st.warning(
                     "The selected strategy model timed out on NVIDIA's hosted service. "
@@ -929,15 +931,19 @@ def main():
 
         # ---- Evaluation ----
         with st.spinner("Evaluating the strategy against the project rubric…"):
-            scores, eval_usage = evaluator.evaluate(
-                strategy_md,
-                client_inputs,
-                judge_model=model_selection["judge_model"],
-                max_tokens=model_selection["judge_max_tokens"],
-            )
+            if model_selection.get("use_llm_judge", True):
+                scores, eval_usage = evaluator.evaluate(
+                    strategy_md,
+                    client_inputs,
+                    judge_model=model_selection["judge_model"],
+                    max_tokens=model_selection["judge_max_tokens"],
+                )
+            else:
+                scores, eval_usage = evaluator.evaluate_locally(strategy_md)
             if (
-                model_selection["judge_model"]
-                and eval_usage.model != model_selection["judge_model"]
+                model_selection.get("use_llm_judge", True)
+                and model_selection["judge_model"]
+                and eval_usage.model != model_selection["judge_model"].split("::")[-1]
             ):
                 st.warning(
                     "The selected evaluation model timed out. "

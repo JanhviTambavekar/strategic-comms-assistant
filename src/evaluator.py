@@ -8,7 +8,7 @@ import re
 from hashlib import sha256
 
 from .config_loader import load_prompt
-from . import llm_client
+from . import cost, llm_client
 
 # The 10 rubric criteria. The first four map 1:1 to the human criteria in
 # docs/human_evaluation_method.md; the rest are structural/quality criteria.
@@ -34,6 +34,28 @@ VERDICT_USEFUL = "Useful"
 VERDICT_EDITS = "Useful with edits"
 VERDICT_NOT_USEFUL = "Not useful"
 EVALUATOR_VERSION = "2.1"
+
+
+def evaluate_locally(strategy: str):
+    """Return an immediate deterministic assessment without a second LLM call."""
+    validation = validate_strategy_structure(strategy)
+    validation_issues, score_caps = audit_completion(strategy, validation)
+    clean = {criterion: 3 for criterion in CRITERIA}
+    clean["timeline_quality"] = validation["timeline"].get("score", 0)
+    clean["kpi_quality"] = validation["kpi"].get("score", 0)
+    for criterion, cap in score_caps.items():
+        clean[criterion] = min(clean[criterion], cap)
+    clean["comment"] = "Quick mode used immediate deterministic checks; use Detailed mode for LLM judging."
+    clean["validation_issues"] = validation_issues
+    clean["timeline_validation"] = validation["timeline"]
+    clean["kpi_validation"] = validation["kpi"]
+    clean["evaluator_version"] = EVALUATOR_VERSION + "-local"
+    clean["judge_model"] = "local-deterministic"
+    clean["strategy_hash"] = sha256(strategy.encode("utf-8")).hexdigest()[:12]
+    valid = [clean[c] for c in CRITERIA if clean[c] > 0]
+    clean["average"] = round(sum(valid) / len(valid), 2) if valid else 0
+    clean["verdict"] = verdict(clean)
+    return clean, cost.Usage("local", "local-deterministic", 0, 0)
 
 
 def evaluate(

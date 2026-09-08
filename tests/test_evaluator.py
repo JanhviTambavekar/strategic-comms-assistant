@@ -5,6 +5,7 @@ from src.evaluator import (
     VERDICT_EDITS,
     audit_completion,
     evaluate,
+    evaluate_locally,
     validate_kpis,
     validate_timeline,
 )
@@ -39,6 +40,13 @@ Owner completes first action.
 
 
 class TimelineValidationTests(unittest.TestCase):
+    def test_local_evaluation_does_not_call_an_llm(self):
+        with patch("src.evaluator.llm_client.generate_with_usage") as generate:
+            scores, usage = evaluate_locally(strategy_with_timeline(""))
+        generate.assert_not_called()
+        self.assertEqual(scores["judge_model"], "local-deterministic")
+        self.assertEqual(usage.input_tokens + usage.output_tokens, 0)
+
     def test_complete_36_months_allows_full_score(self):
         timeline = "\n".join([
             "| Months 1-3 | Task: Publish briefing; AIDA: Attention; Channel: LinkedIn |",

@@ -296,6 +296,7 @@ When NVIDIA NIM configured:
 - Strategy generation and independent evaluation can use different providers/models.
 - Each distinct free service receives one bounded attempt (`FREE_MODEL_TIMEOUT=12` by default), followed by automatic cross-provider failover. NVIDIA uses one configured fallback rather than walking its full model catalogue.
 - Credentials remain local in `.env`; only blank configuration examples are tracked by Git.
+- Quick mode now performs one 700-token generation call and runs evaluation locally, removing the second sequential LLM request. Detailed mode retains the full independent LLM judge for research-quality comparisons.
 
 ### Recommended Production Multi-Model Panel
 
