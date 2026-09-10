@@ -1,5 +1,7 @@
 # AI-Driven Strategic Communications Assistant — Project Strategy and Change Log
 
+> Historical development notes. For current setup and repository scope, use the [project README](../README.md). Provider claims and configuration details below may describe earlier project stages.
+
 **Project:** 6G7V0007 MSc Project 06  
 **Client:** Scientia Scripta  
 **Status:** Living implementation and evaluation record

@@ -1,138 +1,117 @@
-# AI-Driven Strategic Communications Assistant
+# AISCE ? AI-Driven Strategic Communications Assistant
 
-An MSc software project that generates tailored communication and engagement strategies for researchers, start-ups, and science-led organisations.
+AISCE helps researchers, university spin-outs and science-led SMEs turn organisational information into a draft communication and engagement plan. It combines a structured questionnaire, optional supporting documents, reusable prompts and a review dashboard in a Streamlit application.
 
-[![Live application](https://img.shields.io/badge/Live_application-Render-46E3B7?style=for-the-badge)](https://strategic-comms-assistant.onrender.com)
-[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
-[![Streamlit](https://img.shields.io/badge/UI-Streamlit-ff4b4b)](https://streamlit.io/)
+**Status:** MSc research prototype. Generated strategies require human review before use.
 
-## Overview
+[Open the application](https://strategic-comms-assistant.onrender.com) ? [Run locally](#run-locally) ? [Design and evaluation](docs/README.md) ? [Deployment](DEPLOYMENT.md)
 
-The application collects a client persona, questionnaire responses, and an optional brief. It routes this evidence through a knowledge tree, constructs a standardised prompt, generates a ten-section strategy, and evaluates the result against the project rubric.
+## Project at a glance
 
-The deployed comparison panel uses four verified Groq free-tier models and one Gemini free-tier model. NVIDIA trial endpoints were removed from the active pool after repeated hosted-service timeouts.
+| | Description |
+|---|---|
+| Author | Janhvi Tambavekar |
+| Programme | MSc Artificial Intelligence, Manchester Metropolitan University |
+| Project partner | Scientia Scripta |
+| Intended users | Research teams, university spin-outs and innovative SMEs |
+| Purpose | Support audience selection, messaging, channel planning and engagement measurement |
+| Stack | Python, Streamlit, provider-independent LLM connectors |
+| Deliverable | A strategy draft, evaluation diagnostics and Word/PDF downloads |
 
-## Current model panel
+The project has two connected parts: developing a repeatable prompt-based strategy method, and implementing that method in an application. Evaluation separates generated-strategy quality from interface usability. This repository contains the software and its methodology; client documents, research datasets, survey responses and dissertation files are kept separately.
 
-| Provider | Model | Intended comparison role |
-|---|---|---|
-| Groq | Qwen 3.8 27B | Default writer and instruction following |
-| Groq | Qwen 3.6 27B | Long-form drafting comparator |
-| Groq | GPT-OSS 20B | Fast structured-output comparator |
-| Groq | GPT-OSS 120B | Higher-capacity reasoning comparator |
-| Google | Gemini 3.5 Flash Lite | Cross-provider fallback/comparator |
+## How it works
 
-Model availability and free-tier limits are controlled by providers and may change. No API keys are stored in this repository.
+1. **Choose a persona:** research project team, university spin-out or SME innovator.
+2. **Provide context:** complete the questionnaire or upload answers, review the extracted fields, and optionally add a brief or further information.
+3. **Generate a draft:** persona routing selects a prompt pathway and combines the questionnaire with supporting evidence.
+4. **Review the result:** inspect the strategy, timeline/KPI checks, rubric assessment, assembled prompt and token/cost information.
+5. **Export and refine:** download a Word or PDF report and review its claims, assumptions and recommendations before sharing it.
 
-## Features
+The main prompt requests ten numbered sections: executive summary, assumptions, stakeholders, audience journey, messages, channels, engagement timeline, KPIs, risks and next steps. Objectives and outcome measures are an additional unnumbered component. See the [prompt contract](docs/AISCE_prompt_template.md).
 
-- Three client personas: researcher, university spin-out, and innovative SME
-- Persona-specific questionnaires and optional document upload
-- Knowledge-tree routing and transparent prompt construction
-- Ten-section strategic communications report
-- Quick mode with one model request and deterministic local evaluation
-- Detailed mode with an independently selectable LLM judge
-- Bounded cross-provider failover and labelled offline demonstration fallback
-- Token, model, latency, and estimated-cost recording
-- Evaluation rubric with ten criteria and mandatory quality gates
+## Generation and evaluation
 
-## Architecture
+| Mode | Behaviour |
+|---|---|
+| Mock | Runs without an API key and returns a labelled canned demonstration. It does not produce tailored model output. |
+| Quick, in the free-model panel | Uses a shorter generation budget and local deterministic evaluation. |
+| Detailed, in the free-model panel | Uses a larger generation budget and a separately selectable LLM judge. |
+| Direct provider configuration | Gemini, Anthropic and OpenAI-compatible connectors support provider-specific settings. |
 
-```text
-Streamlit UI -> input and document extraction -> persona classification
-             -> knowledge-tree routing -> prompt construction
-             -> free-model pool -> strategy formatting and evaluation
-```
+The model pool depends on configured credentials and identifiers in [the example configuration](.env.example) and [the LLM client](src/llm_client.py). Model identifiers, quotas and availability must be checked with the chosen provider; inclusion in the code does not guarantee access. Provider failover and mock fallback must be distinguished from a selected-model result.
 
-## Local setup
+Evaluation combines a ten-criterion rubric with checks for report structure, timeline coverage and measurable KPIs. These are diagnostics, not proof that a strategy is accurate or effective. The [evaluation rubric](docs/evaluation_rubric.md) explains the criteria and gates; the [comparison protocol](docs/model_comparison.md) describes controlled experiments.
 
-Python 3.11 or later is recommended.
+## Run locally
+
+Use Python 3.11 and create a virtual environment. These commands are for PowerShell:
 
 ```powershell
 git clone https://github.com/JanhviTambavekar/strategic-comms-assistant.git
 cd strategic-comms-assistant
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 Copy-Item .env.example .env
+python -m streamlit run app.py
 ```
 
-For live generation, edit `.env`:
+On macOS/Linux, activate with `source .venv/bin/activate` and copy the configuration with `cp .env.example .env`.
 
-```dotenv
-LLM_PROVIDER=free
-GROQ_API_KEY=your_key_here
-GROQ_MODEL=qwen/qwen3.8-27b
-GROQ_REQUEST_TIMEOUT=30
+Open `http://localhost:8501`. The example configuration defaults to `LLM_PROVIDER=mock`, so no API account or private dataset is needed to explore the workflow. Enter fictional information into the form for a demonstration.
+
+For live generation, edit your local `.env`: select a provider, add its key and configure an available model. For the shared model panel, use `LLM_PROVIDER=free` and configure at least one supported provider. Restart after configuration changes. The local `.env` overrides existing environment values.
+
+Never commit a populated `.env` or Streamlit secrets file. Hosted credentials are configured outside Git; see [deployment instructions](DEPLOYMENT.md).
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A[Persona and questionnaire] --> C[Parse and extract evidence]
+    B[Optional supporting document] --> C
+    C --> D[Persona classification and knowledge-tree routing]
+    D --> E[Prompt construction]
+    E --> F[LLM provider or mock response]
+    F --> G[Strategy report]
+    G --> H[Checks and optional LLM judge]
+    H --> I[Human review and export]
+    E --> J[Prompt transparency]
 ```
 
-Run the application:
+| Location | Responsibility |
+|---|---|
+| [`app.py`](app.py) | Streamlit interface and workflow orchestration |
+| [`config/`](config/) | Persona labels and questionnaire schemas; no completed responses |
+| [`prompts/`](prompts/) | Reusable strategy and evaluation instructions |
+| [`src/`](src/) | Parsing, routing, model access, evaluation, formatting and export |
+| [`tests/`](tests/) | Unit tests with small in-code synthetic fixtures |
+| [`docs/`](docs/README.md) | Design rationale, evaluation methods and technical notes |
+| [`render.yaml`](render.yaml) | Render deployment blueprint |
+| [`.env.example`](.env.example) | Configuration names and empty credential placeholders |
 
-```powershell
-streamlit run app.py
-```
-
-Open http://localhost:8501. With no API key, use `LLM_PROVIDER=mock` for the offline workflow.
-
-## Model comparison workflow
-
-For a fair report comparison:
-
-1. Keep the persona, questionnaire responses, evidence, prompt, mode, and token budget fixed.
-2. Select a different strategy model for each run.
-3. Keep the judge and evaluation settings constant.
-4. Record output, score, latency, tokens, fallback status, and provider errors.
-5. Repeat each condition because free endpoints vary in load and output.
-
-See [`docs/model_comparison.md`](docs/model_comparison.md) for the protocol, measurements, limitations, and results template.
-
-## Testing
+## Tests
 
 ```powershell
 python -m unittest discover -s tests -q
 ```
 
-## Project structure
+The suite runs without live provider calls. It covers timeline and KPI validation, evaluation gates, response handling, model-pool configuration and report-title formatting. Passing tests establish these behaviours, not the effectiveness of a real communication campaign.
 
-```text
-strategic-comms-assistant/
-|-- app.py                    Streamlit UI and pipeline orchestration
-|-- config/                   Persona and questionnaire configuration
-|-- data/sample_uploads/      Synthetic demonstration briefs
-|-- docs/                     Design, evaluation, and research documentation
-|-- ground_truth/             Worked examples and reference outputs
-|-- prompts/                  Standardised prompt templates
-|-- src/                      Routing, LLM, extraction, formatting, evaluation
-|-- tests/                    Automated unit tests
-|-- render.yaml               Render deployment blueprint
-`-- PROJECT_UPDATES.md        Chronological implementation record
-```
+## Repository and data boundaries
 
-## Reproducibility and security
+Keep source code, reusable prompts, questionnaire schemas, tests and documentation in Git. Keep completed questionnaires, uploaded briefs, survey results, generated strategies, experiment outputs and dissertation/approval documents outside the repository or in ignored local directories.
 
-- Local secrets belong in `.env`, which is ignored by Git.
-- Render secrets are environment variables marked `sync: false` in the blueprint.
-- Quick mode uses local evaluation to reduce latency and avoid a second request.
-- Offline fallback results are labelled and must not be counted as live-model results.
-- `main` deploys automatically to Render; free instances may cold-start after inactivity.
+- Credentials, local data, uploads, outputs and common report/archive formats are ignored.
+- The app processes uploads for the active session; live generation sends assembled evidence to the configured provider. This is not a secure client-record system.
+- Do not enter confidential or personal material into a public demonstration.
+- Formerly tracked example inputs and outputs were removed from the current tree; Git history can still contain earlier versions.
 
-Live application: https://strategic-comms-assistant.onrender.com
+Read [contribution guidance](CONTRIBUTING.md) before committing changes.
 
-## Academic artefacts
+## Scope and limitations
 
-| Artefact | Location |
-|---|---|
-| AISCE prompt template | `prompts/full_strategy.txt`, `docs/AISCE_prompt_template.md` |
-| Evaluation rubric | `docs/evaluation_rubric.md`, `src/evaluator.py` |
-| Model-comparison protocol | `docs/model_comparison.md` |
-| Human evaluation method | `docs/human_evaluation_method.md` |
-| Ground-truth examples | `ground_truth/` |
-| Cost and token model | `docs/cost_model.md`, `src/cost.py` |
-| Development history | `PROJECT_UPDATES.md` |
+AISCE demonstrates a complete research workflow but needs broader user evaluation and production controls for confidential use. Synthetic demonstrations do not show real organisational impact. Automated scores can miss contextual mistakes, and template-sensitive checks can misclassify differently formatted content. Review factual claims, audiences, budgets, timelines and permissions before using a strategy.
 
-## Limitations
-
-- Free-tier quotas, model identifiers, and availability may change.
-- Outputs require human review before operational use.
-- Automated scores are comparative indicators, not proof of effectiveness.
-- Offline fallback output is for demonstrations, not model benchmarking.
+Authentication, persistent audit storage, retention controls, stronger upload validation and more extensive live-provider testing are further development priorities. Historical notes are identified in the [documentation index](docs/README.md); the code and current setup guides define the runnable application.

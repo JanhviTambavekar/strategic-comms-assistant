@@ -5,3 +5,37 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# Credentials (retain empty example configuration).
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local inputs, research data and generated artefacts.
+data/
+ground_truth/
+uploads/
+reports/
+exports/
+evaluation_results/
+local_data/
+*.pdf
+*.docx
+*.xlsx
+*.csv
+*.zip
+*.7z
+*.log
+ui_mockup.html
+
+# Tool caches and machine-specific files.
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

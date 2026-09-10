@@ -400,13 +400,19 @@ def inject_custom_css():
 
         .stSidebar [data-testid="stRadio"] > div[role="radiogroup"] {
             display: flex;
+            flex-wrap: wrap;
             gap: 0.5rem;
             width: 100%;
         }
 
-        .stSidebar [data-testid="stRadio"] label {
-            flex: 1 1 0;
-            min-width: 0;
+        /* Style only the choices, not the widget heading/help label. Let whole
+           choices wrap on narrow sidebars instead of splitting their text. */
+        .stSidebar [data-testid="stRadio"] [role="radiogroup"] label {
+            flex: 1 0 auto;
+            min-width: max-content;
+            min-height: 2.75rem;
+            box-sizing: border-box;
+            align-items: center;
             margin: 0 !important;
             padding: 0.5rem 0.55rem;
             border: 1px solid #e2e8f0;
@@ -414,6 +420,12 @@ def inject_custom_css():
             background: #fff;
             font-size: 0.78rem;
             line-height: 1.25;
+        }
+
+        .stSidebar [data-testid="stRadio"] [role="radiogroup"] label p {
+            white-space: nowrap;
+            overflow-wrap: normal;
+            word-break: normal;
         }
 
         .stSidebar [data-testid="stMarkdownContainer"] > p {

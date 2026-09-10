@@ -1,5 +1,7 @@
 # NVIDIA free-endpoint model panel
 
+> Historical development notes. For current setup and repository scope, use the [project README](../README.md). Provider claims and configuration details below may describe earlier project stages.
+
 Verified against NVIDIA's official API Catalog and API reference on 8 September 2026.
 
 | Model | Project role | Endpoint ID | Availability behaviour |

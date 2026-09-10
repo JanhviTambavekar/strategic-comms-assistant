@@ -7,8 +7,7 @@ captures human judgement in plain language so that Task 7 can turn it into a
 formal, numeric rubric. It must not jump ahead to fixed scores or thresholds;
 that is Task 7's job.
 
-**Grounded in:** the three Task 4 ground-truth strategies and the contrast `mock`
-baseline (see `ground_truth/usefulness_evaluation.md`).
+**Development context:** the method was developed with a local calibration set and a mock baseline. Calibration inputs and recorded outputs are maintained outside the public repository.
 
 ---
 
@@ -173,20 +172,9 @@ Draft decision guidance (to be formalised in Task 7):
 - **All four Strong** → *Useful*.
 - **Clear only** is never enough on its own.
 
-## 6. Worked application (calibration set)
+## 6. Calibration procedure
 
-Applying this method to the Task 4 outputs (full detail in
-`ground_truth/usefulness_evaluation.md`):
-
-| Strategy | Clear | Relevant | Actionable | Resource-appropriate | Overall |
-|---|---|---|---|---|---|
-| TidalCarbon | Strong | Strong | Strong | Strong | Useful |
-| NeuroSight | Strong | Strong | Strong | Strong | Useful |
-| GreenCrate | Strong | Strong | Strong | Strong | Useful |
-| `mock` baseline | Strong | Weak | OK | Weak | Not useful |
-
-These four cases are the **calibration set**: any rubric from Task 7 must
-reproduce these human verdicts to be considered aligned.
+Apply the same criteria to several locally held synthetic cases and a labelled mock baseline. Record strengths, limitations and disagreements privately, then check whether the numeric rubric reflects the human judgements. Calibration records and per-case verdicts are not distributed in this repository.
 
 ## 7. Hand-off to the rubric (Task 7)
 

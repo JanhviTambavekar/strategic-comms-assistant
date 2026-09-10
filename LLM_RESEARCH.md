@@ -1,5 +1,7 @@
 # LLM Research & Recommendations
 
+> Historical development notes. For current setup and repository scope, use the [project README](README.md). Provider claims and configuration details below may describe earlier project stages.
+
 **For:** MSc Project 06 — AI-Driven Strategic Communications Assistant
 **Compiled:** June 2026
 **Purpose:** Identify which Large Language Models are best suited to generating

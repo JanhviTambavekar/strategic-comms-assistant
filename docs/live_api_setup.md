@@ -1,5 +1,7 @@
 # Live API Setup — Google Gemini (Primary Provider)
 
+> Historical development notes. For current setup and repository scope, use the [project README](../README.md). Provider claims and configuration details below may describe earlier project stages.
+
 This note records how to run the app against a **real LLM**. The primary provider
 is now **Google Gemini**; Anthropic and OpenAI remain supported as alternatives.
 

@@ -1,5 +1,7 @@
 # AI-Driven Strategic Communications Assistant — Complete Project Updates
 
+> Historical development notes. For current setup and repository scope, use the [project README](README.md). Provider claims and configuration details below may describe earlier project stages.
+
 **Project:** MSc Project 06 — Design and Development of an AI-Driven Strategic Communications Assistant  
 **Client:** Scientia Scripta  
 **Status:** MVP Complete with Multi-Model Evaluation & Dashboard  

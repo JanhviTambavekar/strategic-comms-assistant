@@ -1,86 +1,34 @@
-# Deploy to Streamlit Community Cloud
+# Deployment
 
-This repository is ready to deploy as a public Streamlit application. The
-entry point is `app.py`; the `config/`, `prompts/`, `docs/`, `data/`, and `src/`
-directories are application assets and must remain in the repository.
+The entry point is `app.py`. Runtime assets are `src/`, `config/` and `prompts/`, with dependencies in `requirements.txt`. No client dataset, generated report or dissertation file is required.
 
-## Before deployment
+## Render
 
-1. Create a GitHub account if needed and install Git for Windows from
-   <https://git-scm.com/download/win>. This computer does not currently have
-   Git available on its command path.
-2. Create an empty **public** GitHub repository, for example
-   `strategic-comms-assistant`.
-3. From the project root, run the following in PowerShell, replacing the URL
-   with your repository URL:
+The repository includes a [Render blueprint](render.yaml) for `main`:
 
-   ```powershell
-   git init
-   git add .
-   git commit -m "Prepare Streamlit deployment"
-   git branch -M main
-   git remote add origin https://github.com/YOUR-USERNAME/strategic-comms-assistant.git
-   git push -u origin main
-   ```
-
-   Do not use `git add -f .env` and do not commit a populated
-   `.streamlit/secrets.toml`. Both are ignored deliberately.
-
-## Deploy
-
-1. Go to <https://share.streamlit.io> and sign in with GitHub.
-2. Select **Create app** (or **Deploy an app**).
-3. Select your repository and its `main` branch.
-4. Set **Main file path** to `app.py`.
-5. Open **Advanced settings** and paste one of the secret configurations below.
-6. Select **Deploy**. After the build completes, Streamlit supplies a public
-   `https://YOUR-APP.streamlit.app` URL. Share that URL; visitors only need a
-   normal web browser.
-
-Pushing later commits to `main` triggers a redeploy.
-
-## Secrets
-
-The app runs in mock mode without any secret, which is suitable for an
-offline/demo version but returns canned content. For live tailored strategies,
-set `LLM_PROVIDER` plus the matching provider key. Root-level Streamlit secrets
-are exposed to this app as environment variables, so no code changes are needed.
-
-### Gemini (recommended live configuration)
-
-```toml
-LLM_PROVIDER = "gemini"
-GOOGLE_API_KEY = "your-real-key"
-GOOGLE_MODEL = "gemini-3.5-flash-lite"
+```text
+Build: pip install -r requirements.txt
+Start: streamlit run app.py --server.address 0.0.0.0 --server.port $PORT --server.headless true
+Health endpoint: /_stcore/health
 ```
 
-### Anthropic
+Connect the repository through Render and use the blueprint. Supply credentials in the hosting dashboard, not in Git. Entries marked `sync: false` require values outside the repository. The blueprint configures the free-model panel; its model identifiers must be available to the provider account.
 
-```toml
-LLM_PROVIDER = "anthropic"
-ANTHROPIC_API_KEY = "your-real-key"
-ANTHROPIC_MODEL = "claude-sonnet-4-6"
-```
+For an offline demonstration, set `LLM_PROVIDER=mock`. For live generation, use `LLM_PROVIDER=free` with provider credentials, or a direct provider from `.env.example`.
 
-### OpenAI
+The blueprint enables deployment on commits. Inspect the hosting build and service logs after a push; a successful Git push alone does not confirm a successful deployment.
 
-```toml
-LLM_PROVIDER = "openai"
-OPENAI_API_KEY = "your-real-key"
-OPENAI_MODEL = "gpt-4o-mini"
-```
+## Streamlit Community Cloud alternative
 
-For NVIDIA NIM, use `LLM_PROVIDER = "openai"`, set `OPENAI_BASE_URL` to
-`https://integrate.api.nvidia.com/v1`, and set `OPENAI_API_KEY` (or the optional
-model-specific NVIDIA key variables described in `.env.example`).
+Connect this repository, choose a branch and select `app.py` as the entry point. Add root-level configuration through the hosting secrets settings, using `.streamlit/secrets.toml.example` as a starting point. Keep the populated file out of Git.
 
-## Notes
+## Configuration and operational checks
 
-- There is no database, filesystem write requirement, or localhost service.
-  Uploaded briefs are processed in memory for the active session.
-- Live LLM calls use the project owner's API account. Public visitors can
-  therefore incur API charges or consume rate limits. Apply provider-side spend
-  limits and consider authentication/rate limiting before wide public sharing.
-- Streamlit Community Cloud is hosted in the United States. Do not invite users
-  to upload confidential or sensitive material unless that is appropriate for
-  your data-handling obligations.
+- Use the configuration names in `.env.example` and supply only credentials needed for the selected provider.
+- Keep local `.env` off the server when host environment values should be authoritative: the app loads `.env` with override enabled.
+- Verify persona selection, questionnaire entry, generation, evaluation and downloads after deployment.
+- Check fallback labels and actual provider/model metadata during evaluation.
+- Provider calls consume account quota and may incur charges. Control public access and provider budgets as appropriate.
+- The prototype has no persistent client-record store or production authentication. Assess data handling before accepting confidential uploads.
+
+See the [README](README.md) for local setup and tests.
